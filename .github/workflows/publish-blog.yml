@@ -48,6 +48,23 @@ jobs:
           server-dir: ./fabiofidone.it/
           dangerous-clean-slate: false
 
+      # Avvisa Bing/IndexNow del nuovo URL — a differenza della Indexing API
+      # di Google (riservata a JobPosting/BroadcastEvent, non usabile per
+      # articoli di blog), IndexNow non ha restrizioni di contenuto ed e'
+      # pensata esattamente per questo caso. Non garantisce l'indicizzazione,
+      # solo la notifica tempestiva del nuovo contenuto.
+      - name: Notifica IndexNow (Bing e altri motori aderenti)
+        if: success()
+        run: |
+          curl -s -X POST "https://api.indexnow.org/indexnow" \
+            -H "Content-Type: application/json; charset=utf-8" \
+            -d '{
+              "host": "www.fabiofidone.it",
+              "key": "dad7be1630d17b70bb076a139effe4cb",
+              "keyLocation": "https://www.fabiofidone.it/dad7be1630d17b70bb076a139effe4cb.txt",
+              "urlList": ["https://www.fabiofidone.it/blog/${{ steps.generate.outputs.slug }}/", "https://www.fabiofidone.it/blog/"]
+            }'
+
       # Notifica finale — parte SOLO se generazione + commit + upload FTP sono
       # andati tutti a buon fine. Deliberatamente fuori dallo script Python:
       # quello scrive solo file in locale nel runner, non sa se poi git push
