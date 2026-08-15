@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>n8n vs Python custom: quando conviene l'uno o l'altro per automatizzare processi — Fabio Fidone</title>
+<meta name="description" content="n8n o Python custom per automatizzare processi aziendali? Confronto pratico: costi, tempi, quando scegliere l'uno e quando l'altro.">
+<link rel="canonical" href="https://www.fabiofidone.it/blog/n8n-vs-python-automazione/">
+<meta property="og:title" content="n8n vs Python custom: quando conviene l'uno o l'altro per automatizzare processi — Fabio Fidone">
+<meta property="og:description" content="n8n o Python custom per automatizzare processi aziendali? Confronto pratico: costi, tempi, quando scegliere l'uno e quando l'altro.">
+<meta property="og:url" content="https://www.fabiofidone.it/blog/n8n-vs-python-automazione/">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Fabio Fidone">
+<meta property="og:locale" content="it_IT">
+<meta property="og:image" content="https://www.fabiofidone.it/images/logo_square.png">
+<meta property="article:published_time" content="2026-08-15">
+<meta property="article:author" content="Fabio Fidone">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="n8n vs Python custom: quando conviene l'uno o l'altro per automatizzare processi — Fabio Fidone">
+<meta name="twitter:image" content="https://www.fabiofidone.it/images/logo_square.png">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "n8n vs Python custom: quando conviene l'uno o l'altro per automatizzare processi", "description": "n8n o Python custom per automatizzare processi aziendali? Confronto pratico: costi, tempi, quando scegliere l'uno e quando l'altro.", "author": {"@type": "Person", "name": "Fabio Fidone", "url": "https://www.fabiofidone.it/"}, "publisher": {"@type": "Person", "name": "Fabio Fidone"}, "datePublished": "2026-08-15", "url": "https://www.fabiofidone.it/blog/n8n-vs-python-automazione/", "mainEntityOfPage": "https://www.fabiofidone.it/blog/n8n-vs-python-automazione/"}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Ma n8n non è limitato a semplici flussi? Posso fare logica complessa se mi ingegno bene?", "acceptedAnswer": {"@type": "Answer", "text": "Tecnicamente sì, ma non dovresti. n8n ha un nodo \"Function\" (JavaScript) dove scrivi codice inline, ma diventare velocemente illeggibile e difficile da testare. Se la tua logica è complessa, il fatto che tu debba ricorrere al nodo Function è un segnale che stai usando lo strumento sbagliato. Potrebbe pure funzionare, ma la manutenzione diventerà un incubo. È come guidare un autobus per una consegna da un km: tecnicamente puoi, ma non è la scelta giusta."}}, {"@type": "Question", "name": "Se scelgo Python, devo imparare Docker, Kubernetes, DevOps per deployare?", "acceptedAnswer": {"@type": "Answer", "text": "No, ma dipende dal contesto. Se già gestisci server o usi un cloud (AWS, DigitalOcean, Heroku), aggiungi uno script Python come un cronjob o una lambda è banale. Docker e Kubernetes servono solo se vuoi scalare massicciamente o hai vincoli di orchestrazione complessi. Per una automazione media, un semplice VPS con cron è sufficientemente robusto e costa 5-10 euro al mese."}}, {"@type": "Question", "name": "Posso migrare da n8n a Python se il flusso diventa troppo complesso?", "acceptedAnswer": {"@type": "Answer", "text": "Sì, ma non è immediato. Dovrai riscrivere la logica (1-2 settimane tipicamente), rifare i test, rifare il deploy. Il documento, i secret, gli endpoint cambiano sistema. Se sospetti che il flusso diventerà complesso, prendi in considerazione Python dall'inizio. Se siete sicuri che resterà semplice, n8n è fine e una eventuale migrazione futura non è un disastro."}}]}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/css/styles.css">
+<style>
+.art-hero { padding: 56px 56px 40px; border-bottom: 1px solid var(--border); }
+.art-meta { font-size: 11px; color: var(--text-muted); margin-bottom: 12px; display: flex; gap: 16px; flex-wrap: wrap; }
+.art-meta .tag { color: var(--yellow); }
+.art-h1 { font-family: 'JetBrains Mono', monospace; font-size: 40px; line-height: 1.1; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 20px; max-width: 820px; }
+.art-h1 .acc { color: var(--yellow); }
+.art-lede { font-family: 'Geist', sans-serif; font-size: 17px; line-height: 1.65; max-width: 680px; color: var(--text-soft, var(--text-muted)); margin: 0; }
+.art-body { max-width: 740px; margin: 0 auto; padding: 48px 56px; }
+.art-body h2 { font-family: 'JetBrains Mono', monospace; font-size: 22px; font-weight: 600; margin: 48px 0 16px; letter-spacing: -0.01em; }
+.art-body h2 .acc { color: var(--yellow); }
+.art-body h3 { font-family: 'JetBrains Mono', monospace; font-size: 16px; font-weight: 600; margin: 32px 0 12px; color: var(--text); }
+.art-body p { font-family: 'Geist', sans-serif; font-size: 15px; line-height: 1.75; color: var(--text-muted); margin: 0 0 20px; }
+.art-body ul, .art-body ol { font-family: 'Geist', sans-serif; font-size: 15px; line-height: 1.75; color: var(--text-muted); margin: 0 0 20px; padding-left: 24px; }
+.art-body li { margin-bottom: 8px; }
+.art-body strong { color: var(--text); font-weight: 600; }
+.art-body a { color: var(--yellow); text-decoration: none; }
+.art-body a:hover { text-decoration: underline; }
+.art-callout { background: var(--surface); border-left: 3px solid var(--yellow); padding: 20px 24px; margin: 28px 0; }
+.art-callout p { margin: 0; font-size: 14px; }
+.art-callout strong { color: var(--yellow); }
+.art-table { width: 100%; border-collapse: collapse; margin: 24px 0; font-family: 'Geist', sans-serif; font-size: 13px; }
+.art-table th { background: var(--surface); padding: 10px 16px; text-align: left; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-muted); border-bottom: 1px solid var(--border); }
+.art-table td { padding: 10px 16px; border-bottom: 1px solid var(--border); color: var(--text-muted); }
+.art-table td:first-child { color: var(--text); font-weight: 500; }
+.art-cta { padding: 40px 56px; background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.art-faq { border-top: 1px solid var(--border); }
+.art-faq-item { padding: 24px 56px; border-bottom: 1px solid var(--border); }
+.art-faq-q { font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 10px; }
+.art-faq-q::before { content: '> '; color: var(--yellow); }
+.art-faq-a { font-family: 'Geist', sans-serif; font-size: 13px; color: var(--text-muted); line-height: 1.65; margin: 0; }
+.cookie-banner { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--border); color: var(--text); padding: 18px 24px; z-index: 9999; font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+.cookie-banner.hidden { display: none; }
+.cookie-content { max-width: 1280px; margin: 0 auto; display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
+.cookie-text { flex: 1; min-width: 200px; line-height: 1.5; color: var(--text-muted); }
+.cookie-text a { color: var(--yellow); text-decoration: none; }
+.cookie-buttons { display: flex; gap: 8px; }
+.cookie-btn { padding: 8px 18px; border: none; cursor: pointer; font-size: 12px; font-weight: 600; font-family: 'JetBrains Mono', monospace; transition: opacity .15s; }
+.cookie-btn-accept { background: var(--yellow); color: oklch(0.16 0.014 60); }
+.cookie-btn-reject { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
+.cookie-btn:hover { opacity: .8; }
+@media(max-width:900px){
+  .art-hero { padding: 32px 20px; }
+  .art-h1 { font-size: 28px; }
+  .art-body { padding: 32px 20px; }
+  .art-cta { padding: 32px 20px; }
+  .art-faq-item { padding: 20px; }
+}
+</style>
+</head>
+<body>
+<a href="#main" class="skip-link">Salta al contenuto</a>
+
+<div id="cookie-banner" class="cookie-banner">
+  <div class="cookie-content">
+    <div class="cookie-text">
+      <strong style="color:var(--text)">// cookie_consent</strong> —
+      Usiamo cookie tecnici e analytics Plausible (consensuale).
+      <a href="/cookie-policy/" target="_blank">cookie-policy</a> · <a href="/privacy-policy/" target="_blank">privacy-policy</a>
+    </div>
+    <div class="cookie-buttons">
+      <button class="cookie-btn cookie-btn-reject" onclick="rejectCookies()">[ rifiuta ]</button>
+      <button class="cookie-btn cookie-btn-accept" onclick="acceptCookies()">[ accetta ]</button>
+    </div>
+  </div>
+</div>
+<script>
+  var COOKIE_NAME='cookie_consent',COOKIE_DURATION=7*24*60*60*1000;
+  function initCookieConsent(){var c=getCookie(COOKIE_NAME);if(c===null){showBanner();}else if(c==='accepted'){hideBanner();loadPlausible();}else{hideBanner();}}
+  function showBanner(){var b=document.getElementById('cookie-banner');if(b)b.classList.remove('hidden');}
+  function hideBanner(){var b=document.getElementById('cookie-banner');if(b)b.classList.add('hidden');}
+  function acceptCookies(){setCookie(COOKIE_NAME,'accepted',COOKIE_DURATION);hideBanner();loadPlausible();}
+  function rejectCookies(){setCookie(COOKIE_NAME,'rejected',COOKIE_DURATION);hideBanner();}
+  function loadPlausible(){if(!window.plausible){var s=document.createElement('script');s.async=s.defer=true;s.src='https://plausible.io/js/script.js';s.dataset.domain='fabiofidone.it';document.head.appendChild(s);}}
+  function setCookie(n,v,d){var e=new Date(Date.now()+d);document.cookie=n+'='+v+';expires='+e.toUTCString()+';path=/;SameSite=Lax';}
+  function getCookie(n){var eq=n+'=',cs=document.cookie.split(';');for(var i=0;i<cs.length;i++){var c=cs[i].trim();if(c.startsWith(eq))return c.substring(eq.length);}return null;}
+  if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',initCookieConsent);}else{initCookieConsent();}
+</script>
+
+<header class="layout-embed">
+  <iframe src="/assets/layout/navbar.html" title="Navigazione principale" class="layout-frame layout-frame-nav" scrolling="no"></iframe>
+</header>
+
+<main id="main" class="wrap">
+
+  <div class="tm-bar">
+    <div class="left">
+      <span class="dot"></span>
+      <span class="crumbs"><span>~</span><span><a href="/blog/" style="color:inherit;text-decoration:none">blog</a></span><span class="active">n8n-vs-python-automazione</span></span>
+    </div>
+    <div class="right">
+      <span>Agosto 2026</span>
+      <span>9 min lettura</span>
+    </div>
+  </div>
+
+  <article>
+    <header class="art-hero">
+      <div class="art-meta">
+        <span class="tag">[ automazione ]</span>
+        <span class="tag">[ n8n ]</span>
+        <span class="tag">[ Python ]</span>
+        <span>15 Agosto 2026 · Fabio Fidone</span>
+      </div>
+      <h1 class="art-h1">
+        <span class="acc">&gt;</span> n8n vs Python custom: quando conviene l'uno o l'altro per automatizzare processi
+      </h1>
+      <p class="art-lede">La scelta tra uno strumento low-code come n8n e uno script Python custom non è una questione di principio: è una questione di progetto, budget e vincoli tecnici specifici. Ecco come decidere davvero.</p>
+    </header>
+
+    <div class="art-body">
+<p>Chi lavora su automazione sa che questa domanda arriva sempre: "Ma non è più veloce usare n8n invece di scrivere Python?" oppure "Il cliente chiede un'automazione: faccio un workflow in n8n o mi scrivo uno script?". La risposta vera è "dipende", ma non nel senso vago. Dipende da cose concrete e misurabili.</p>
+
+<h2><span class="acc">#</span> Il trade-off reale</h2>
+
+<p>n8n è uno strumento di workflow automation: trascini nodi, connetti le cose, clicchi, finito. Python è un linguaggio: scrivi codice, gestisci dipendenze, testi, deployi. Sembrano opposti, ma il trade-off è tra velocità iniziale e flessibilità a lungo termine.</p>
+
+<p><strong>n8n vince su:</strong></p>
+<ul>
+<li>Tempo di setup iniziale (ore, non giorni).</li>
+<li>Manutenzione se il flusso non cambia mai.</li>
+<li>Visibilità del flusso: chiunque apre n8n e vede cosa succede.</li>
+<li>Costi infrastrutturali bassi se usi il cloud di n8n.</li>
+<li>Zero dipendenze da installare.</li>
+</ul>
+
+<p><strong>Python custom vince su:</strong></p>
+<ul>
+<li>Logica complessa: cicli, condizioni annidate, calcoli.</li>
+<li>Integrazione profonda con librerie specifiche (pandas, scikit-learn, custom logic).</li>
+<li>Portabilità: gira ovunque Python sia disponibile.</li>
+<li>Controllo totale su errori, retry, timeout, logging.</li>
+<li>Scalabilità: un container Docker vs limiti di n8n cloud.</li>
+<li>Costi a lungo termine: se già gestisci server, Python aggiunge poco.</li>
+</ul>
+
+<h2><span class="acc">#</span> Quando scegliere n8n</h2>
+
+<p>n8n è la scelta giusta quando il flusso è <strong>lineare e stabile</strong>. Intendo: dati entrano da qui, si trasformano, escono di là, fine. Non cambia mai. Nessun algoritmo complesso.</p>
+
+<p>Esempi reali:</p>
+<ul>
+<li>Leggere email, estrarre allegati, salvarli su Google Drive, mandare notifica Slack.</li>
+<li>Ogni mattina: query al DB, trasforma i risultati, invia report via email.</li>
+<li>Webhook riceve ordine → aggiorna CRM → avvia email automazione → log su Airtable.</li>
+<li>Sincronizzazione bidirezionale tra due app: Form → Zapier-style trigger → destination.</li>
+</ul>
+
+<p>In questi casi, n8n è più veloce da costruire (1-3 ore), più facile da debuggare visualmente, e il cliente può persino modificarlo da solo se le richieste sono piccole.</p>
+
+<p><strong>Costo tipico:</strong> n8n cloud parte da ~20 euro/mese (piano base), o self-hosted gratis se hai già un server. Tempo sviluppo: 2-8 ore per un flusso medio.</p>
+
+<h2><span class="acc">#</span> Quando scegliere Python custom</h2>
+
+<p>Python è necessario quando il flusso ha complessità che n8n non gestisce bene:</p>
+
+<ul>
+<li><strong>Logica condizionale profonda:</strong> "Se il valore è tra A e B, fai X; se tra B e C, fai Y; ma se è assente, query il DB, e se il DB torna null, chiama l'API di fallback". n8n diventa un spaghetto di nodi.</li>
+<li><strong>Elaborazione dati:</strong> manipolazione complessa, aggregazioni, trasformazioni non lineari. pandas rende questo banale.</li>
+<li><strong>Machine learning o AI:</strong> se il flusso include un modello, preprocessing, LLM calls con prompt engineering, Python è l'unico ambiente decente.</li>
+<li><strong>Scalabilità e throughput:</strong> n8n cloud ha limiti di execution, task parallelism. Python su Kubernetes o ECS no.</li>
+<li><strong>Sicurezza e audit:</strong> in contesti regulated, il codice versioned su Git, review board, audit trail è uno standard; n8n cloud è meno auditable.</li>
+<li><strong>Integrazioni custom profonde:</strong> un'API non documentata, endpoint stranieri, logica di retry peculiare. Python ti dà il totale controllo.</li>
+</ul>
+
+<p>Esempi:</p>
+<ul>
+<li>Sistema di scoring clienti: ricevi dati, elabori con logica custom, aggreghi da 3 fonti, chiami un modello, scrivi il risultato solo se passa una soglia.</li>
+<li>Pipeline RAG: documenti → chunking → embedding → query vettoriale → LLM → response → log. n8n non è adatto.</li>
+<li>ETL aziendale: dati da 5 DB diversi, normalizzazione complessa, deduplicazione, validazione. Meglio Python + dbt.</li>
+</ul>
+
+<p><strong>Costo tipico:</strong> 40-160 ore di sviluppo (1-4 settimane), hosting €5-50/mese su VPS o cloud. Manutenzione ongoing.</p>
+
+<h2><span class="acc">#</span> La tabella decisionale</h2>
+
+<table class="art-table">
+<tr>
+<th>Fattore</th>
+<th>n8n</th>
+<th>Python</th>
+</tr>
+<tr>
+<td><strong>Tempo setup</strong></td>
+<td>Ore</td>
+<td>Giorni/settimane</td>
+</tr>
+<tr>
+<td><strong>Complessità logica</strong></td>
+<td>Bassa-media</td>
+<td>Arbitraria</td>
+</tr>
+<tr>
+<td><strong>Costo infrastruttura/mese</strong></td>
+<td>20-200€ (cloud)</td>
+<td>0€ (se server exist) a 50€</td>
+</tr>
+<tr>
+<td><strong>Curva di apprendimento</strong></td>
+<td>1-2 giorni</td>
+<td>Dipende dalla base</td>
+</tr>
+<tr>
+<td><strong>Scalabilità</strong></td>
+<td>Media (limiti cloud)</td>
+<td>Alta</td>
+</tr>
+<tr>
+<td><strong>Debuggabilità</strong></td>
+<td>Visuale, facile</td>
+<td>Log, traceback, più duro</td>
+</tr>
+<tr>
+<td><strong>Manutenzione</strong></td>
+<td>Bassa se stabile</td>
+<td>Media-alta</td>
+</tr>
+<tr>
+<td><strong>Cambiamenti futuri</strong></td>
+<td>Facili se piccoli</td>
+<td>Più strutturati, testing</td>
+</tr>
+</table>
+
+<h2><span class="acc">#</span> L'errore più comune</h2>
+
+<div class="art-callout">
+<p><strong>Non scegliere lo strumento in base all'abitudine, scegli in base al progetto.</strong> Ho visto team Python scegliere Python per un "leggi email → trasforma → manda Slack" quando n8n era la scelta ovvia. E ho visto aziende spendere 6 mesi a fare click-click in n8n per un sistema che meritava Python dal giorno uno. La differenza è semplice: la complessità logica della tua automazione, il volume di dati, i vincoli futuri.</p>
+</div>
+
+<h2><span class="acc">#</span> L'approccio ibrido (la vera risposta)</h2>
+
+<p>In pratica, nella mia esperienza, spesso la soluzione migliore è né l'uno né l'altro puro:</p>
+
+<ul>
+<li><strong>n8n per l'orchestrazione:</strong> gestisce il flusso principale, i webhook, le notifiche.</li>
+<li><strong>Python come nodo custom in n8n:</strong> n8n ha un nodo "Execute code" (JavaScript) e puoi anche triggerare script Python esterni via HTTP o webhook. Per la logica complessa, chiami il tuo microservizio Python da dentro n8n.</li>
+</ul>
+
+<p>Questo combina il meglio: velocità iniziale di n8n, flessibilità di Python dove serve.</p>
+
+<p><strong>Quando questa ibrida NON conviene:</strong> se il 70%+ della logica è Python, allora fai tutto in Python. Se è solo un 5% di logica edge case, allora l'ibrido aggiunge overhead.</p>
+
+<h2><span class="acc">#</span> Chi mi contatta per automazione</h2>
+
+<p>Le domande giuste che mi pongo con un cliente sono:</p>
+
+<ol>
+<li>Quanto è stabile il flusso? (Cambia ogni settimana? Ogni anno?)</li>
+<li>Quanto è complessa la logica? (Click-click flusso, o calcoli sofisticati?)</li>
+<li>Quanti dati? (Centinaia di record/giorno o milioni?)</li>
+<li>Qual è il team che lo manterrà? (Non-tech che sa n8n, o engineer Python?)</li>
+<li>Compliance/audit richiesti? (Se sì, probabilmente Python versioned su Git.)</li>
+</ol>
+
+<p>Le risposte determinano lo strumento, non il contrario.</p>
+
+<h2><span class="acc">#</span> Quando NON automatizzare</h2>
+
+<p>Ultimo punto, brutalmente onesto: a volte la risposta è "non fare nulla". Se un processo manuale è stabile, tocca pochissimi record al mese, e il costo di automazione è alto (sia n8n che Python), lasciale le cose come stanno. L'automazione ha senso quando il guadagno (tempo risparmiato, errori ridotti, latenza) supera il costo (setup + manutenzione).</p>
+    </div>
+
+    <section class="art-faq">
+      <div style="padding:20px 56px 16px;border-bottom:1px solid var(--border)">
+        <h2 style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text-muted);font-weight:600;margin:0">// FAQ</h2>
+      </div>
+      <div class="art-faq-item">
+        <p class="art-faq-q">Ma n8n non è limitato a semplici flussi? Posso fare logica complessa se mi ingegno bene?</p>
+        <p class="art-faq-a">Tecnicamente sì, ma non dovresti. n8n ha un nodo &quot;Function&quot; (JavaScript) dove scrivi codice inline, ma diventare velocemente illeggibile e difficile da testare. Se la tua logica è complessa, il fatto che tu debba ricorrere al nodo Function è un segnale che stai usando lo strumento sbagliato. Potrebbe pure funzionare, ma la manutenzione diventerà un incubo. È come guidare un autobus per una consegna da un km: tecnicamente puoi, ma non è la scelta giusta.</p>
+      </div>
+      <div class="art-faq-item">
+        <p class="art-faq-q">Se scelgo Python, devo imparare Docker, Kubernetes, DevOps per deployare?</p>
+        <p class="art-faq-a">No, ma dipende dal contesto. Se già gestisci server o usi un cloud (AWS, DigitalOcean, Heroku), aggiungi uno script Python come un cronjob o una lambda è banale. Docker e Kubernetes servono solo se vuoi scalare massicciamente o hai vincoli di orchestrazione complessi. Per una automazione media, un semplice VPS con cron è sufficientemente robusto e costa 5-10 euro al mese.</p>
+      </div>
+      <div class="art-faq-item">
+        <p class="art-faq-q">Posso migrare da n8n a Python se il flusso diventa troppo complesso?</p>
+        <p class="art-faq-a">Sì, ma non è immediato. Dovrai riscrivere la logica (1-2 settimane tipicamente), rifare i test, rifare il deploy. Il documento, i secret, gli endpoint cambiano sistema. Se sospetti che il flusso diventerà complesso, prendi in considerazione Python dall&#x27;inizio. Se siete sicuri che resterà semplice, n8n è fine e una eventuale migrazione futura non è un disastro.</p>
+      </div>
+    </section>
+
+    <div class="art-cta">
+      <div style="font-size:10px;color:var(--yellow);letter-spacing:.06em;margin-bottom:12px">[ prossimo passo ]</div>
+      <h2 style="font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:700;margin:0 0 12px;letter-spacing:-0.015em">Vuoi valutare una soluzione simile per la tua azienda?</h2>
+      <p style="font-family:'Geist',sans-serif;font-size:14px;color:var(--text-muted);line-height:1.65;max-width:520px;margin:0 0 24px">Dimmi il tuo caso, valuto la fattibilità e ti dico costi e tempi realistici. Il primo confronto è gratuito.</p>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center">
+        <a class="tm-btn primary" href="/consulenze-ai/">Parliamo — è gratis →</a>
+        <a class="tm-btn ghost" href="/blog/">Altri articoli →</a>
+      </div>
+    </div>
+  </article>
+
+  <!--NAV_BLOCK-->
+  <nav style="padding:24px 56px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px">
+    <a href="/blog/quanto-costa-assistente-ai-su-misura/" style="color:var(--text-muted);text-decoration:none;font-size:12px">← Quanto costa davvero un assistente AI su misura</a>
+    <a href="/blog/" style="color:var(--yellow);text-decoration:none;font-size:12px">tutti gli articoli →</a>
+  </nav>
+  <!--/NAV_BLOCK-->
+
+</main>
+
+<footer class="layout-embed">
+  <iframe src="/assets/layout/footer.html" title="Footer" class="layout-frame layout-frame-footer" scrolling="no"></iframe>
+</footer>
+
+</body>
+</html>
