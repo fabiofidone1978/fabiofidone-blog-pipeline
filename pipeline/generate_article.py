@@ -318,7 +318,19 @@ def esegui():
         data["pubblicati"].append({"slug": argomento["slug"], "titolo": titolo_piano,
                                     "data": oggi.strftime("%Y-%m-%d")})
         salva_topics(data)
-        manda_whatsapp(f'Nuovo articolo blog PUBBLICATO: "{titolo_piano}" — https://www.fabiofidone.it/blog/{argomento["slug"]}/')
+        # NOTA: nessuna notifica "pubblicato" qui — a questo punto i file sono
+        # solo scritti in locale nel runner. Il commit git e l'upload FTP sono
+        # step successivi del workflow, possono ancora fallire (es. permessi,
+        # credenziali FTP). La notifica di successo vera parte da un secondo
+        # step del workflow, DOPO che l'upload FTP e' andato a buon fine —
+        # altrimenti si rischia di dire "pubblicato" quando non lo e' ancora,
+        # come e' successo nel primo test reale di questa pipeline.
+        print(f'Articolo "{titolo_piano}" pronto — commit e upload FTP gestiti dal workflow.')
+        github_output = os.environ.get("GITHUB_OUTPUT")
+        if github_output:
+            with open(github_output, "a", encoding="utf-8") as f:
+                f.write(f"titolo={titolo_piano}\n")
+                f.write(f"slug={argomento['slug']}\n")
     else:
         print("FAKE_AI=1 — topics_covered.json NON modificato, nessuna notifica reale inviata.")
 

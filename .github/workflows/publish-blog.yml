@@ -9,6 +9,9 @@ on:
     branches: [main]
     paths: [".github/workflows/publish-blog.yml", "pipeline/topics_covered.json"]   # TEMPORANEO: solo per test, va rimosso dopo
 
+permissions:
+  contents: write   # senza questo il GITHUB_TOKEN di default e' sola-lettura e il push del commit automatico fallisce con 403
+
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -22,6 +25,7 @@ jobs:
           python-version: "3.12"
 
       - name: Genera articolo e aggiorna il sito
+        id: generate
         working-directory: pipeline
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
@@ -46,3 +50,23 @@ jobs:
           local-dir: ./site/blog/
           server-dir: ./blog/
           dangerous-clean-slate: false
+
+      # Notifica finale — parte SOLO se generazione + commit + upload FTP sono
+      # andati tutti a buon fine. Deliberatamente fuori dallo script Python:
+      # quello scrive solo file in locale nel runner, non sa se poi git push
+      # o l'upload FTP falliscono dopo di lui.
+      - name: Notifica successo su WhatsApp
+        if: success()
+        run: |
+          curl -s "https://api.callmebot.com/whatsapp.php" \
+            --data-urlencode "phone=${{ secrets.WHATSAPP_PHONE }}" \
+            --data-urlencode "text=Nuovo articolo blog PUBBLICATO: \"${{ steps.generate.outputs.titolo }}\" — https://www.fabiofidone.it/blog/${{ steps.generate.outputs.slug }}/" \
+            --data-urlencode "apikey=${{ secrets.WHATSAPP_APIKEY }}"
+
+      - name: Notifica fallimento su WhatsApp (commit o upload FTP)
+        if: failure()
+        run: |
+          curl -s "https://api.callmebot.com/whatsapp.php" \
+            --data-urlencode "phone=${{ secrets.WHATSAPP_PHONE }}" \
+            --data-urlencode "text=Blog fabiofidone.it: il run e' fallito nel commit o nell'upload FTP (non nella generazione) — controlla i log su GitHub Actions" \
+            --data-urlencode "apikey=${{ secrets.WHATSAPP_APIKEY }}"
