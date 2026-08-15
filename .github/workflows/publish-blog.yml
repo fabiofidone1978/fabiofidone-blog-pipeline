@@ -41,14 +41,14 @@ jobs:
           git diff --staged --quiet || git commit -m "Nuovo articolo blog automatico [skip ci]"
           git push
 
-      - name: Pubblica su Aruba via FTP (solo la cartella blog/)
+      - name: Pubblica su Aruba via FTP (blog/ + sitemap.xml)
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./site/blog/
-          server-dir: ./fabiofidone.it/blog/
+          local-dir: ./site/
+          server-dir: ./fabiofidone.it/
           dangerous-clean-slate: false
 
       # Notifica finale — parte SOLO se generazione + commit + upload FTP sono

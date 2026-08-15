@@ -66,3 +66,14 @@ def aggiorna_nav_articolo_precedente(prev_html, nuovo_slug, nuovo_titolo):
     )
     inizio, fine = m.span()
     return prev_html[:inizio] + nuovo_blocco + prev_html[fine:]
+
+
+def aggiorna_sitemap(sitemap_xml, slug):
+    """Aggiunge la URL del nuovo articolo al sitemap.xml del sito (root,
+    non solo blog/) — dimenticato nella prima versione della pipeline,
+    trovato mancante per gli ultimi 6 articoli pubblicati manualmente."""
+    riga = f'  <url><loc>https://www.fabiofidone.it/blog/{slug}/</loc><priority>0.9</priority><changefreq>monthly</changefreq></url>\n'
+    marcatore = "<!--SITEMAP_BLOG_INSERT-->"
+    if marcatore not in sitemap_xml:
+        raise ValueError("Marcatore <!--SITEMAP_BLOG_INSERT--> non trovato in sitemap.xml — file non modificato per sicurezza")
+    return sitemap_xml.replace(marcatore, riga + "  " + marcatore, 1)

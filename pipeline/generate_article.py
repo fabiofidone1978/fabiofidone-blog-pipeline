@@ -22,11 +22,12 @@ import urllib.request
 import urllib.parse
 from datetime import datetime, timezone
 
-from index_updater import aggiorna_indice_blog, aggiorna_nav_articolo_precedente
+from index_updater import aggiorna_indice_blog, aggiorna_nav_articolo_precedente, aggiorna_sitemap
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_ROOT = os.path.dirname(BASE_DIR)
-SITE_BLOG_DIR = os.path.join(REPO_ROOT, "site", "blog")
+SITE_DIR = os.path.join(REPO_ROOT, "site")
+SITE_BLOG_DIR = os.path.join(SITE_DIR, "blog")
 
 TOPICS_FILE = os.path.join(BASE_DIR, "topics_covered.json")
 STYLE_GUIDE_FILE = os.path.join(BASE_DIR, "style_guide.md")
@@ -317,6 +318,15 @@ def esegui():
         with open(prev_path, "w", encoding="utf-8") as f:
             f.write(prev_html)
         print(f"Nav aggiornata su: site/blog/{prev_articolo['slug']}/index.html")
+
+    # 4) aggiunge la URL al sitemap.xml del sito (root, non solo blog/)
+    sitemap_path = os.path.join(SITE_DIR, "sitemap.xml")
+    with open(sitemap_path, "r", encoding="utf-8") as f:
+        sitemap_xml = f.read()
+    sitemap_xml = aggiorna_sitemap(sitemap_xml, argomento["slug"])
+    with open(sitemap_path, "w", encoding="utf-8") as f:
+        f.write(sitemap_xml)
+    print("sitemap.xml aggiornato.")
 
     if not FAKE_AI:
         data["pubblicati"].append({"slug": argomento["slug"], "titolo": titolo_piano,
