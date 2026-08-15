@@ -48,7 +48,7 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./site/blog/
-          server-dir: ./blog/
+          server-dir: ./fabiofidone.it/blog/
           dangerous-clean-slate: false
 
       # Notifica finale — parte SOLO se generazione + commit + upload FTP sono
