@@ -111,7 +111,7 @@ Categoria: {argomento['categoria']}
 def chiama_claude(prompt):
     body = json.dumps({
         "model": MODEL,
-        "max_tokens": 4096,
+        "max_tokens": 8192,
         "messages": [{"role": "user", "content": prompt}],
     }).encode("utf-8")
     req = urllib.request.Request(
@@ -127,6 +127,27 @@ def chiama_claude(prompt):
     with urllib.request.urlopen(req, timeout=120) as resp:
         data = json.loads(resp.read().decode("utf-8"))
     return "".join(blocco.get("text", "") for blocco in data.get("content", []))
+
+
+def chiama_claude_con_retry(argomento, tentativi=3):
+    """Occasionalmente il modello tronca la risposta o salta qualche
+    marcatore (visto due volte nei test reali: prima solo FAQ3, poi
+    tutte le FAQ mancanti). Non e' un errore da segnalare e basta —
+    prima si ritenta, il fallimento WhatsApp resta come ultima rete
+    di sicurezza se anche i retry falliscono."""
+    ultimo_errore = None
+    for tentativo in range(1, tentativi + 1):
+        try:
+            testo_grezzo = chiama_claude(costruisci_prompt(argomento))
+            contenuto = estrai_contenuto(testo_grezzo)
+            valida_contenuto(contenuto)
+            if tentativo > 1:
+                print(f"Riuscito al tentativo {tentativo}/{tentativi}.")
+            return contenuto
+        except ValueError as e:
+            ultimo_errore = e
+            print(f"Tentativo {tentativo}/{tentativi} fallito: {e}")
+    raise ultimo_errore
 
 
 def risposta_finta(argomento):
@@ -275,14 +296,12 @@ def esegui():
 
     if FAKE_AI:
         print("FAKE_AI=1 — nessuna chiamata reale al modello.")
-        testo_grezzo = risposta_finta(argomento)
+        contenuto = estrai_contenuto(risposta_finta(argomento))
+        valida_contenuto(contenuto)
     else:
         if not ANTHROPIC_API_KEY:
             raise SystemExit("ANTHROPIC_API_KEY mancante.")
-        testo_grezzo = chiama_claude(costruisci_prompt(argomento))
-
-    contenuto = estrai_contenuto(testo_grezzo)
-    valida_contenuto(contenuto)
+        contenuto = chiama_claude_con_retry(argomento)
 
     oggi = datetime.now(timezone.utc)
     prev_articolo = data["pubblicati"][-1] if data["pubblicati"] else None
