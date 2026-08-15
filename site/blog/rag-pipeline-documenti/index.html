@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RAG: come trasformare i tuoi documenti aziendali in un assistente AI — Fabio Fidone</title>
+<meta name="description" content="Cos'è una pipeline RAG, come funziona davvero, perché il 70% delle implementazioni fallisce e come evitare gli errori più comuni. Guida tecnica pratica 2026.">
+<link rel="canonical" href="https://www.fabiofidone.it/blog/rag-pipeline-documenti/">
+<meta property="og:title" content="RAG: come trasformare i tuoi documenti in un assistente AI — Fabio Fidone">
+<meta property="og:description" content="Guida pratica alle pipeline RAG: architettura, errori comuni, costi reali. Senza teorie astratte.">
+<meta property="og:url" content="https://www.fabiofidone.it/blog/rag-pipeline-documenti/">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Fabio Fidone">
+<meta property="og:locale" content="it_IT">
+<meta property="og:image" content="https://www.fabiofidone.it/images/logo_square.png">
+<meta property="article:published_time" content="2026-06-09">
+<meta property="article:author" content="Fabio Fidone">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="RAG: documenti aziendali come assistente AI — Fabio Fidone">
+<meta name="twitter:image" content="https://www.fabiofidone.it/images/logo_square.png">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"RAG: come trasformare i tuoi documenti aziendali in un assistente AI","description":"Cos'è una pipeline RAG, come funziona davvero e perché il 70% delle implementazioni fallisce ancora prima del collaudo.","author":{"@type":"Person","name":"Fabio Fidone","url":"https://www.fabiofidone.it/"},"publisher":{"@type":"Person","name":"Fabio Fidone"},"datePublished":"2026-06-09","url":"https://www.fabiofidone.it/blog/rag-pipeline-documenti/","mainEntityOfPage":"https://www.fabiofidone.it/blog/rag-pipeline-documenti/"}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Cos'è la RAG in intelligenza artificiale?","acceptedAnswer":{"@type":"Answer","text":"RAG (Retrieval-Augmented Generation) è una tecnica che combina un sistema di ricerca (retrieval) con un LLM (generazione). Il modello non risponde solo con la sua conoscenza interna, ma cerca prima informazioni rilevanti in una knowledge base e poi le usa per generare una risposta precisa e aggiornata."}},{"@type":"Question","name":"Quanto costa implementare una pipeline RAG?","acceptedAnswer":{"@type":"Answer","text":"Una pipeline RAG aziendale base costa tra 3.000 e 8.000 euro di sviluppo. I costi mensili includono un database vettoriale (da 0 a 50 €/mese), un modello di embedding (circa 0,13 $/1M token con OpenAI), e il modello LLM per le risposte (variabile in base ai volumi). Una RAG che gestisce 500 query al mese ha costi operativi sotto i 30 euro."}},{"@type":"Question","name":"Quali documenti si possono usare in una pipeline RAG?","acceptedAnswer":{"@type":"Answer","text":"Qualsiasi documento testuale: PDF, Word, Excel, PowerPoint, pagine web, database, email, chat history, note, manuali tecnici. Il preprocessing (chunking, pulizia, metadata) è la parte più critica: documenti mal preparati danno risposte sbagliate indipendentemente dalla qualità del modello."}}]}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/css/styles.css">
+<style>
+.art-hero { padding: 56px 56px 40px; border-bottom: 1px solid var(--border); }
+.art-meta { font-size: 11px; color: var(--text-muted); margin-bottom: 12px; display: flex; gap: 16px; flex-wrap: wrap; }
+.art-meta .tag { color: var(--yellow); }
+.art-h1 { font-family: 'JetBrains Mono', monospace; font-size: 40px; line-height: 1.1; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 20px; max-width: 820px; }
+.art-h1 .acc { color: var(--yellow); }
+.art-lede { font-family: 'Geist', sans-serif; font-size: 17px; line-height: 1.65; max-width: 680px; color: var(--text-soft, var(--text-muted)); margin: 0; }
+.art-body { max-width: 740px; margin: 0 auto; padding: 48px 56px; }
+.art-body h2 { font-family: 'JetBrains Mono', monospace; font-size: 22px; font-weight: 600; margin: 48px 0 16px; letter-spacing: -0.01em; }
+.art-body h2 .acc { color: var(--yellow); }
+.art-body h3 { font-family: 'JetBrains Mono', monospace; font-size: 16px; font-weight: 600; margin: 32px 0 12px; color: var(--text); }
+.art-body p { font-family: 'Geist', sans-serif; font-size: 15px; line-height: 1.75; color: var(--text-muted); margin: 0 0 20px; }
+.art-body ul, .art-body ol { font-family: 'Geist', sans-serif; font-size: 15px; line-height: 1.75; color: var(--text-muted); margin: 0 0 20px; padding-left: 24px; }
+.art-body li { margin-bottom: 8px; }
+.art-body strong { color: var(--text); font-weight: 600; }
+.art-body a { color: var(--yellow); text-decoration: none; }
+.art-body a:hover { text-decoration: underline; }
+.art-callout { background: var(--surface); border-left: 3px solid var(--yellow); padding: 20px 24px; margin: 28px 0; }
+.art-callout p { margin: 0; font-size: 14px; }
+.art-callout strong { color: var(--yellow); }
+.art-schema { background: var(--bg-soft); border: 1px solid var(--border); padding: 24px; margin: 28px 0; }
+.art-schema-title { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--yellow); margin-bottom: 16px; letter-spacing: .05em; }
+.art-schema-flow { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.art-schema-step { background: var(--surface); border: 1px solid var(--border); padding: 8px 14px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text); }
+.art-schema-arrow { color: var(--yellow); font-size: 18px; line-height: 1; }
+.art-table { width: 100%; border-collapse: collapse; margin: 24px 0; font-family: 'Geist', sans-serif; font-size: 13px; }
+.art-table th { background: var(--surface); padding: 10px 16px; text-align: left; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-muted); border-bottom: 1px solid var(--border); }
+.art-table td { padding: 10px 16px; border-bottom: 1px solid var(--border); color: var(--text-muted); }
+.art-table td:first-child { color: var(--text); font-weight: 500; }
+.art-cta { padding: 40px 56px; background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.art-faq { border-top: 1px solid var(--border); }
+.art-faq-item { padding: 24px 56px; border-bottom: 1px solid var(--border); }
+.art-faq-q { font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 10px; }
+.art-faq-q::before { content: '> '; color: var(--yellow); }
+.art-faq-a { font-family: 'Geist', sans-serif; font-size: 13px; color: var(--text-muted); line-height: 1.65; margin: 0; }
+.cookie-banner { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--border); color: var(--text); padding: 18px 24px; z-index: 9999; font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+.cookie-banner.hidden { display: none; }
+.cookie-content { max-width: 1280px; margin: 0 auto; display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
+.cookie-text { flex: 1; min-width: 200px; line-height: 1.5; color: var(--text-muted); }
+.cookie-text a { color: var(--yellow); text-decoration: none; }
+.cookie-buttons { display: flex; gap: 8px; }
+.cookie-btn { padding: 8px 18px; border: none; cursor: pointer; font-size: 12px; font-weight: 600; font-family: 'JetBrains Mono', monospace; transition: opacity .15s; }
+.cookie-btn-accept { background: var(--yellow); color: oklch(0.16 0.014 60); }
+.cookie-btn-reject { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
+.cookie-btn:hover { opacity: .8; }
+@media(max-width:900px){
+  .art-hero { padding: 32px 20px; }
+  .art-h1 { font-size: 28px; }
+  .art-body { padding: 32px 20px; }
+  .art-cta { padding: 32px 20px; }
+  .art-faq-item { padding: 20px; }
+  .art-schema-flow { flex-direction: column; }
+  .art-schema-arrow { transform: rotate(90deg); }
+}
+</style>
+</head>
+<body>
+<a href="#main" class="skip-link">Salta al contenuto</a>
+
+<div id="cookie-banner" class="cookie-banner">
+  <div class="cookie-content">
+    <div class="cookie-text">
+      <strong style="color:var(--text)">// cookie_consent</strong> —
+      Usiamo cookie tecnici e analytics Plausible (consensuale).
+      <a href="/cookie-policy/" target="_blank">cookie-policy</a> · <a href="/privacy-policy/" target="_blank">privacy-policy</a>
+    </div>
+    <div class="cookie-buttons">
+      <button class="cookie-btn cookie-btn-reject" onclick="rejectCookies()">[ rifiuta ]</button>
+      <button class="cookie-btn cookie-btn-accept" onclick="acceptCookies()">[ accetta ]</button>
+    </div>
+  </div>
+</div>
+<script>
+  var COOKIE_NAME='cookie_consent',COOKIE_DURATION=7*24*60*60*1000;
+  function initCookieConsent(){var c=getCookie(COOKIE_NAME);if(c===null){showBanner();}else if(c==='accepted'){hideBanner();loadPlausible();}else{hideBanner();}}
+  function showBanner(){var b=document.getElementById('cookie-banner');if(b)b.classList.remove('hidden');}
+  function hideBanner(){var b=document.getElementById('cookie-banner');if(b)b.classList.add('hidden');}
+  function acceptCookies(){setCookie(COOKIE_NAME,'accepted',COOKIE_DURATION);hideBanner();loadPlausible();}
+  function rejectCookies(){setCookie(COOKIE_NAME,'rejected',COOKIE_DURATION);hideBanner();}
+  function loadPlausible(){if(!window.plausible){var s=document.createElement('script');s.async=s.defer=true;s.src='https://plausible.io/js/script.js';s.dataset.domain='fabiofidone.it';document.head.appendChild(s);}}
+  function setCookie(n,v,d){var e=new Date(Date.now()+d);document.cookie=n+'='+v+';expires='+e.toUTCString()+';path=/;SameSite=Lax';}
+  function getCookie(n){var eq=n+'=',cs=document.cookie.split(';');for(var i=0;i<cs.length;i++){var c=cs[i].trim();if(c.startsWith(eq))return c.substring(eq.length);}return null;}
+  if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',initCookieConsent);}else{initCookieConsent();}
+</script>
+
+<header class="layout-embed">
+  <iframe src="/assets/layout/navbar.html" title="Navigazione principale" class="layout-frame layout-frame-nav" scrolling="no"></iframe>
+</header>
+
+<main id="main" class="wrap">
+
+  <div class="tm-bar">
+    <div class="left">
+      <span class="dot"></span>
+      <span class="crumbs"><span>~</span><span><a href="/blog/" style="color:inherit;text-decoration:none">blog</a></span><span class="active">rag-pipeline-documenti</span></span>
+    </div>
+    <div class="right">
+      <span>Giugno 2026</span>
+      <span>10 min lettura</span>
+    </div>
+  </div>
+
+  <article>
+    <header class="art-hero">
+      <div class="art-meta">
+        <span class="tag">[ LLM ]</span>
+        <span class="tag">[ architettura ]</span>
+        <span class="tag">[ RAG ]</span>
+        <span>9 Giugno 2026 · Fabio Fidone</span>
+      </div>
+      <h1 class="art-h1">
+        <span class="acc">&gt;</span> RAG: come trasformare<br>i tuoi documenti aziendali<br>in un assistente AI
+      </h1>
+      <p class="art-lede">Cos'è una pipeline RAG, come funziona nel dettaglio, e perché il 70% delle implementazioni fallisce ancora prima di andare in produzione. Senza slide, senza acronimi vuoti.</p>
+    </header>
+
+    <div class="art-body">
+
+      <p>Il caso d'uso che mi viene chiesto più spesso: "voglio che i miei dipendenti possano fare domande ai documenti aziendali in linguaggio naturale". Contratto, manuale operativo, knowledge base interna, storico dei ticket. Qualsiasi testo. RAG è la risposta tecnica a questo problema, ma la maggior parte delle implementazioni che vedo non funziona come previsto.</p>
+
+      <p>Questo articolo ti spiega perché, e come si fa correttamente.</p>
+
+      <h2><span class="acc">#</span> Cos'è RAG (senza il solito acronimo inutile)</h2>
+
+      <p>I modelli LLM come GPT-4 o Claude rispondono in base alla conoscenza che hanno appreso durante il training. Non sanno nulla del tuo contratto firmato ieri, del tuo manuale aggiornato la settimana scorsa, delle email dei tuoi clienti.</p>
+
+      <p>RAG — <strong>Retrieval-Augmented Generation</strong> — risolve questo problema. Prima della generazione della risposta, il sistema cerca nei tuoi documenti i pezzi di testo più rilevanti alla domanda. Poi li passa al modello come contesto. Il modello risponde basandosi su quella documentazione specifica, non sulla sua conoscenza generica.</p>
+
+      <p>Il risultato: un assistente AI che sa cosa c'è scritto nel contratto con il fornitore, qual è la procedura aziendale per le note spese, o quale bug è stato risolto nella versione 3.2 del software.</p>
+
+      <div class="art-schema">
+        <div class="art-schema-title">// pipeline RAG — flusso semplificato</div>
+        <div class="art-schema-flow">
+          <div class="art-schema-step">documento PDF/Word</div>
+          <div class="art-schema-arrow">→</div>
+          <div class="art-schema-step">chunking + cleaning</div>
+          <div class="art-schema-arrow">→</div>
+          <div class="art-schema-step">embedding model</div>
+          <div class="art-schema-arrow">→</div>
+          <div class="art-schema-step">vector store</div>
+        </div>
+        <div style="margin:12px 0;border-top:1px dashed var(--border);padding-top:12px">
+          <div class="art-schema-flow">
+            <div class="art-schema-step">domanda utente</div>
+            <div class="art-schema-arrow">→</div>
+            <div class="art-schema-step">embedding query</div>
+            <div class="art-schema-arrow">→</div>
+            <div class="art-schema-step">similarity search</div>
+            <div class="art-schema-arrow">→</div>
+            <div class="art-schema-step">top-k chunks</div>
+            <div class="art-schema-arrow">→</div>
+            <div class="art-schema-step">LLM + risposta</div>
+          </div>
+        </div>
+      </div>
+
+      <h2><span class="acc">#</span> Le tre fasi critiche</h2>
+
+      <h3>1. Preprocessing dei documenti (la fase più sottovalutata)</h3>
+      <p>Il 70% dei fallimenti RAG avviene qui, non nel modello. Un PDF di un contratto scansionato con OCR pessimo, un Word con tabelle annidate male, un HTML con menu di navigazione che inquina il testo — tutti questi problemi producono chunk (frammenti di testo) inutili o rumorosi. Il modello di embedding non può fare miracoli con spazzatura.</p>
+
+      <p>Un preprocessing corretto include: pulizia del testo, rimozione di header/footer ripetuti, riconoscimento della struttura semantica (sezioni, paragrafi, tabelle), chunking intelligente che rispetti i confini semantici naturali del documento invece di tagliare ogni N caratteri.</p>
+
+      <h3>2. Embedding e vector store</h3>
+      <p>Gli embedding trasformano il testo in vettori numerici che catturano il significato semantico. Due frasi con lo stesso significato ma parole diverse avranno vettori simili. Il vector store (Pinecone, Chroma, pgvector, Weaviate, Qdrant) permette di cercare per similarità semantica invece che per keyword.</p>
+
+      <p>Per la maggior parte dei casi aziendali italiani, <strong>pgvector su PostgreSQL è la scelta più sana</strong>: nessun servizio esterno aggiuntivo, query SQL standard, facile da backuppare. Weaviate o Qdrant sono più performanti su corpora molto grandi (milioni di documenti).</p>
+
+      <h3>3. Retrieval e reranking</h3>
+      <p>La ricerca di similarità restituisce i K chunk più vicini semanticamente alla domanda. Non sempre i più vicini semanticamente sono i più utili per rispondere. Il reranking (cross-encoder) riordina i risultati con un modello più lento ma più preciso. La differenza in qualità delle risposte è spesso significativa, specialmente su domande complesse o multi-parte.</p>
+
+      <div class="art-callout">
+        <p><strong>Il problema più comune che vedo:</strong> chunk troppo piccoli (50-100 caratteri) o troppo grandi (interi documenti). Il chunking ottimale per la maggior parte dei documenti aziendali è 300-600 token con 50-100 token di overlap tra chunk adiacenti. Ma dipende dal tipo di documento — un manuale tecnico ha bisogno di chunk diversi rispetto a un contratto legale.</p>
+      </div>
+
+      <h2><span class="acc">#</span> Strumenti: cosa uso e perché</h2>
+
+      <table class="art-table">
+        <tr><th>Componente</th><th>Scelta tipica</th><th>Alternativa</th></tr>
+        <tr><td>Embedding</td><td>OpenAI text-embedding-3-small</td><td>Cohere, BGE-M3 (locale)</td></tr>
+        <tr><td>Vector store</td><td>pgvector (PostgreSQL)</td><td>Qdrant, Chroma, Pinecone</td></tr>
+        <tr><td>Reranker</td><td>Cohere Rerank</td><td>cross-encoder locale</td></tr>
+        <tr><td>LLM generazione</td><td>Claude Haiku / GPT-4o-mini</td><td>Claude Sonnet per casi complessi</td></tr>
+        <tr><td>Orchestrazione</td><td>Python custom</td><td>LangChain, LlamaIndex</td></tr>
+        <tr><td>PDF parsing</td><td>pdfplumber + pypdf</td><td>Docling, Unstructured</td></tr>
+      </table>
+
+      <p>Nota su LangChain e LlamaIndex: sono utili per prototipare, ma tendono ad aggiungere astrazione sopra astrazione. In produzione preferisco pipeline Python custom: meno magie, più controllo, meno surface di errori silenziosi.</p>
+
+      <h2><span class="acc">#</span> I 5 errori che fanno fallire le RAG in produzione</h2>
+
+      <ol>
+        <li><strong>Nessuna valutazione della qualità del retrieval.</strong> Come sai se i chunk restituiti sono quelli giusti? Senza un dataset di test con domande/risposte attese, stai andando a intuizione.</li>
+        <li><strong>Ignorare le domande che non trovano risposta.</strong> Un buon sistema RAG deve sapere quando non ha abbastanza informazioni per rispondere e dirlo esplicitamente, invece di allucinare.</li>
+        <li><strong>Documenti aggiornati ma embedding vecchi.</strong> Se aggiorni un documento nella knowledge base senza rigenerare gli embedding relativi, il sistema continuerà a rispondere con le informazioni vecchie.</li>
+        <li><strong>Prompt di sistema troppo vago.</strong> "Rispondi in base ai documenti" non basta. Il prompt deve definire il tono, come gestire l'incertezza, quando citare la fonte, cosa fare con domande fuori scope.</li>
+        <li><strong>Nessun logging delle query.</strong> Le domande degli utenti sono la fonte di miglioramento più preziosa. Se non le registri, non sai cosa funziona e cosa no.</li>
+      </ol>
+
+      <h2><span class="acc">#</span> Quando RAG è la soluzione giusta</h2>
+
+      <p>RAG è ideale quando:</p>
+      <ul>
+        <li>Hai documenti proprietari che il modello non conosce</li>
+        <li>I documenti si aggiornano frequentemente</li>
+        <li>Le risposte devono essere verificabili (con citazione della fonte)</li>
+        <li>Il volume di documenti è troppo grande per stare nel contesto del modello</li>
+      </ul>
+
+      <p>RAG non è la soluzione quando:</p>
+      <ul>
+        <li>Hai meno di 20-30 documenti piccoli: può bastare inserirli tutti nel contesto</li>
+        <li>Le domande richiedono ragionamento multi-step su dati strutturati: meglio SQL + LLM</li>
+        <li>I documenti cambiano in tempo reale: serve un'architettura con aggiornamento incrementale degli embedding</li>
+      </ul>
+
+      <p>Puoi vedere un esempio di RAG che ho costruito per un cliente nel <a href="/portfolio/rag-chatbot/">portfolio</a>. Se hai un caso specifico da valutare, <a href="/consulenze-ai/">scrivimi</a> — il primo incontro è gratuito.</p>
+
+    </div>
+
+    <section class="art-faq">
+      <div style="padding:20px 56px 16px;border-bottom:1px solid var(--border)">
+        <h2 style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text-muted);font-weight:600;margin:0">// FAQ</h2>
+      </div>
+
+      <div class="art-faq-item">
+        <p class="art-faq-q">Cos'è la RAG in intelligenza artificiale?</p>
+        <p class="art-faq-a">RAG (Retrieval-Augmented Generation) è una tecnica che combina ricerca semantica con generazione di testo. Prima di rispondere, il sistema cerca nei tuoi documenti i pezzi più rilevanti alla domanda e li passa come contesto al modello. Risultato: risposte basate sulla tua documentazione specifica, non sulla conoscenza generica del modello.</p>
+      </div>
+
+      <div class="art-faq-item">
+        <p class="art-faq-q">Quanto costa implementare una pipeline RAG?</p>
+        <p class="art-faq-a">Una pipeline RAG aziendale base costa tra 3.000 e 8.000 euro di sviluppo. I costi operativi mensili sono solitamente sotto i 30-50 euro per volumi medi (500-1.000 query/mese): database vettoriale (gratis con pgvector su server esistente), embedding OpenAI (~0,02$/1M token con text-embedding-3-small), LLM per le risposte (variabile). I costi esplodono se usi Pinecone e GPT-4 senza ottimizzazione.</p>
+      </div>
+
+      <div class="art-faq-item">
+        <p class="art-faq-q">Quali documenti si possono usare in una pipeline RAG?</p>
+        <p class="art-faq-a">Qualsiasi documento testuale: PDF (con o senza OCR), Word, Excel, PowerPoint, pagine web, database relazionali, email, Notion, Confluence, Slack. Il preprocessing è fondamentale: documenti mal strutturati o scansionati con OCR scarso producono risposte inaffidabili indipendentemente dalla qualità del modello.</p>
+      </div>
+
+      <div class="art-faq-item">
+        <p class="art-faq-q">RAG è diverso dal fine-tuning?</p>
+        <p class="art-faq-a">Sì, sono approcci complementari. Fine-tuning aggiorna i pesi del modello su esempi specifici — utile per addestrare uno stile di risposta o un dominio tecnico molto specifico. RAG aggiunge conoscenza esterna senza toccare il modello — utile per documenti che cambiano. In pratica il 90% dei casi aziendali si risolve con RAG, non con fine-tuning.</p>
+      </div>
+    </section>
+
+    <div class="art-cta">
+      <div style="font-size:10px;color:var(--yellow);letter-spacing:.06em;margin-bottom:12px">[ prossimo passo ]</div>
+      <h2 style="font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:700;margin:0 0 12px;letter-spacing:-0.015em">Vuoi costruire una RAG sui tuoi documenti?</h2>
+      <p style="font-family:'Geist',sans-serif;font-size:14px;color:var(--text-muted);line-height:1.65;max-width:520px;margin:0 0 24px">Dimmi che tipo di documenti hai e cosa vuoi che il sistema sappia rispondere. Valuto la fattibilità e ti dico costi e tempi realistici. Gratis.</p>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center">
+        <a class="tm-btn primary" href="/consulenze-ai/">Parliamo — è gratis →</a>
+        <a class="tm-btn ghost" href="/portfolio/rag-chatbot/">Guarda un progetto reale →</a>
+      </div>
+    </div>
+  </article>
+
+  <nav style="padding:24px 56px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px">
+    <a href="/blog/bot-telegram-azienda/" style="color:var(--text-muted);text-decoration:none;font-size:12px">← bot Telegram aziendale</a>
+    <a href="/blog/automazione-ai-workflow/" style="color:var(--yellow);text-decoration:none;font-size:12px">automazione AI: cosa vale →</a>
+  </nav>
+
+</main>
+
+<footer class="layout-embed">
+  <iframe src="/assets/layout/footer.html" title="Footer" class="layout-frame layout-frame-footer" scrolling="no"></iframe>
+</footer>
+
+</body>
+</html>

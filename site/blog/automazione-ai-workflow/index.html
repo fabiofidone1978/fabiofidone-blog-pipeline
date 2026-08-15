@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Automazione AI: cosa vale davvero la pena automatizzare (e cosa no) — Fabio Fidone</title>
+<meta name="description" content="Dopo 14.000 ore con LLM e centinaia di workflow automatizzati: un framework pratico per decidere cosa automatizzare con l'AI e cosa lasciare agli esseri umani.">
+<link rel="canonical" href="https://www.fabiofidone.it/blog/automazione-ai-workflow/">
+<meta property="og:title" content="Automazione AI: cosa vale davvero la pena automatizzare — Fabio Fidone">
+<meta property="og:description" content="Un framework pratico per decidere cosa automatizzare con l'AI. Non tutto quello che si può automatizzare vale la pena automatizzare.">
+<meta property="og:url" content="https://www.fabiofidone.it/blog/automazione-ai-workflow/">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Fabio Fidone">
+<meta property="og:locale" content="it_IT">
+<meta property="og:image" content="https://www.fabiofidone.it/images/logo_square.png">
+<meta property="article:published_time" content="2026-06-09">
+<meta property="article:author" content="Fabio Fidone">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Automazione AI: cosa vale davvero automatizzare — Fabio Fidone">
+<meta name="twitter:image" content="https://www.fabiofidone.it/images/logo_square.png">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Automazione AI: cosa vale davvero la pena automatizzare (e cosa no)","description":"Un framework pratico per decidere cosa automatizzare con l'AI e cosa lasciare agli esseri umani.","author":{"@type":"Person","name":"Fabio Fidone","url":"https://www.fabiofidone.it/"},"publisher":{"@type":"Person","name":"Fabio Fidone"},"datePublished":"2026-06-09","url":"https://www.fabiofidone.it/blog/automazione-ai-workflow/","mainEntityOfPage":"https://www.fabiofidone.it/blog/automazione-ai-workflow/"}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Cosa si può automatizzare con l'intelligenza artificiale?","acceptedAnswer":{"@type":"Answer","text":"Con l'AI si possono automatizzare: classificazione e routing di testi (email, ticket, documenti), estrazione di dati strutturati da testi non strutturati, generazione di bozze (report, email, contenuti ripetitivi), riassunti e sintesi di documenti, risposta a domande frequenti, monitoraggio e alert su anomalie, pipeline dati con trasformazioni semantiche."}},{"@type":"Question","name":"Quanto risparmia un'azienda con l'automazione AI?","acceptedAnswer":{"@type":"Answer","text":"Dipende dal processo. Workflow di classificazione e smistamento email: risparmio tipico 8-15 ore/settimana per un team di 5. Estrazione dati da documenti: 70-90% di riduzione del tempo manuale. Risposta a FAQ: 40-60% delle richieste gestite senza intervento umano. Il ROI si calcola in settimane per processi ad alto volume."}},{"@type":"Question","name":"Quali tool si usano per l'automazione AI?","acceptedAnswer":{"@type":"Answer","text":"Gli strumenti più usati: n8n (workflow no-code/low-code, self-hosted), Python con LangChain o chiamate dirette alle API, Make (ex Integromat) per integrazioni SaaS, Zapier per casi semplici. Per workflow complessi con logica personalizzata, Python custom è sempre la scelta più affidabile e meno costosa nel lungo termine."}}]}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/css/styles.css">
+<style>
+.art-hero { padding: 56px 56px 40px; border-bottom: 1px solid var(--border); }
+.art-meta { font-size: 11px; color: var(--text-muted); margin-bottom: 12px; display: flex; gap: 16px; flex-wrap: wrap; }
+.art-meta .tag { color: var(--yellow); }
+.art-h1 { font-family: 'JetBrains Mono', monospace; font-size: 40px; line-height: 1.1; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 20px; max-width: 820px; }
+.art-h1 .acc { color: var(--yellow); }
+.art-lede { font-family: 'Geist', sans-serif; font-size: 17px; line-height: 1.65; max-width: 680px; color: var(--text-soft, var(--text-muted)); margin: 0; }
+.art-body { max-width: 740px; margin: 0 auto; padding: 48px 56px; }
+.art-body h2 { font-family: 'JetBrains Mono', monospace; font-size: 22px; font-weight: 600; margin: 48px 0 16px; letter-spacing: -0.01em; }
+.art-body h2 .acc { color: var(--yellow); }
+.art-body h3 { font-family: 'JetBrains Mono', monospace; font-size: 16px; font-weight: 600; margin: 32px 0 12px; color: var(--text); }
+.art-body p { font-family: 'Geist', sans-serif; font-size: 15px; line-height: 1.75; color: var(--text-muted); margin: 0 0 20px; }
+.art-body ul, .art-body ol { font-family: 'Geist', sans-serif; font-size: 15px; line-height: 1.75; color: var(--text-muted); margin: 0 0 20px; padding-left: 24px; }
+.art-body li { margin-bottom: 8px; }
+.art-body strong { color: var(--text); font-weight: 600; }
+.art-body a { color: var(--yellow); text-decoration: none; }
+.art-body a:hover { text-decoration: underline; }
+.art-callout { background: var(--surface); border-left: 3px solid var(--yellow); padding: 20px 24px; margin: 28px 0; }
+.art-callout p { margin: 0; font-size: 14px; }
+.art-callout strong { color: var(--yellow); }
+.art-callout.warn { border-left-color: var(--red, #f97316); }
+.art-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); border: 1px solid var(--border); margin: 24px 0; }
+.art-grid-cell { background: var(--surface); padding: 20px 24px; }
+.art-grid-cell-title { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600; letter-spacing: .05em; margin-bottom: 12px; }
+.art-grid-cell-title.yes { color: var(--teal, #4ade80); }
+.art-grid-cell-title.no { color: var(--red, #f97316); }
+.art-grid-cell ul { font-family: 'Geist', sans-serif; font-size: 13px; color: var(--text-muted); line-height: 1.65; margin: 0; padding-left: 16px; }
+.art-grid-cell li { margin-bottom: 6px; }
+.art-cta { padding: 40px 56px; background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.art-faq { border-top: 1px solid var(--border); }
+.art-faq-item { padding: 24px 56px; border-bottom: 1px solid var(--border); }
+.art-faq-q { font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 10px; }
+.art-faq-q::before { content: '> '; color: var(--yellow); }
+.art-faq-a { font-family: 'Geist', sans-serif; font-size: 13px; color: var(--text-muted); line-height: 1.65; margin: 0; }
+.art-matrix { background: var(--bg-soft); border: 1px solid var(--border); padding: 24px; margin: 28px 0; }
+.art-matrix-title { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--yellow); margin-bottom: 16px; letter-spacing: .05em; }
+.art-matrix-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed var(--border); font-size: 13px; gap: 16px; }
+.art-matrix-row:last-child { border-bottom: none; }
+.art-matrix-label { font-family: 'Geist', sans-serif; color: var(--text-muted); flex: 1; }
+.art-matrix-score { font-family: 'JetBrains Mono', monospace; font-size: 11px; white-space: nowrap; }
+.art-matrix-score.high { color: var(--teal, #4ade80); }
+.art-matrix-score.mid { color: var(--yellow); }
+.art-matrix-score.low { color: var(--red, #f97316); }
+.cookie-banner { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--border); color: var(--text); padding: 18px 24px; z-index: 9999; font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+.cookie-banner.hidden { display: none; }
+.cookie-content { max-width: 1280px; margin: 0 auto; display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
+.cookie-text { flex: 1; min-width: 200px; line-height: 1.5; color: var(--text-muted); }
+.cookie-text a { color: var(--yellow); text-decoration: none; }
+.cookie-buttons { display: flex; gap: 8px; }
+.cookie-btn { padding: 8px 18px; border: none; cursor: pointer; font-size: 12px; font-weight: 600; font-family: 'JetBrains Mono', monospace; transition: opacity .15s; }
+.cookie-btn-accept { background: var(--yellow); color: oklch(0.16 0.014 60); }
+.cookie-btn-reject { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
+.cookie-btn:hover { opacity: .8; }
+@media(max-width:900px){
+  .art-hero { padding: 32px 20px; }
+  .art-h1 { font-size: 28px; }
+  .art-body { padding: 32px 20px; }
+  .art-cta { padding: 32px 20px; }
+  .art-faq-item { padding: 20px; }
+  .art-grid-2 { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<a href="#main" class="skip-link">Salta al contenuto</a>
+
+<div id="cookie-banner" class="cookie-banner">
+  <div class="cookie-content">
+    <div class="cookie-text">
+      <strong style="color:var(--text)">// cookie_consent</strong> —
+      Usiamo cookie tecnici e analytics Plausible (consensuale).
+      <a href="/cookie-policy/" target="_blank">cookie-policy</a> · <a href="/privacy-policy/" target="_blank">privacy-policy</a>
+    </div>
+    <div class="cookie-buttons">
+      <button class="cookie-btn cookie-btn-reject" onclick="rejectCookies()">[ rifiuta ]</button>
+      <button class="cookie-btn cookie-btn-accept" onclick="acceptCookies()">[ accetta ]</button>
+    </div>
+  </div>
+</div>
+<script>
+  var COOKIE_NAME='cookie_consent',COOKIE_DURATION=7*24*60*60*1000;
+  function initCookieConsent(){var c=getCookie(COOKIE_NAME);if(c===null){showBanner();}else if(c==='accepted'){hideBanner();loadPlausible();}else{hideBanner();}}
+  function showBanner(){var b=document.getElementById('cookie-banner');if(b)b.classList.remove('hidden');}
+  function hideBanner(){var b=document.getElementById('cookie-banner');if(b)b.classList.add('hidden');}
+  function acceptCookies(){setCookie(COOKIE_NAME,'accepted',COOKIE_DURATION);hideBanner();loadPlausible();}
+  function rejectCookies(){setCookie(COOKIE_NAME,'rejected',COOKIE_DURATION);hideBanner();}
+  function loadPlausible(){if(!window.plausible){var s=document.createElement('script');var s2=document.createElement('script');s.async=s.defer=true;s.src='https://plausible.io/js/script.js';s.dataset.domain='fabiofidone.it';document.head.appendChild(s);}}
+  function setCookie(n,v,d){var e=new Date(Date.now()+d);document.cookie=n+'='+v+';expires='+e.toUTCString()+';path=/;SameSite=Lax';}
+  function getCookie(n){var eq=n+'=',cs=document.cookie.split(';');for(var i=0;i<cs.length;i++){var c=cs[i].trim();if(c.startsWith(eq))return c.substring(eq.length);}return null;}
+  if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',initCookieConsent);}else{initCookieConsent();}
+</script>
+
+<header class="layout-embed">
+  <iframe src="/assets/layout/navbar.html" title="Navigazione principale" class="layout-frame layout-frame-nav" scrolling="no"></iframe>
+</header>
+
+<main id="main" class="wrap">
+
+  <div class="tm-bar">
+    <div class="left">
+      <span class="dot"></span>
+      <span class="crumbs"><span>~</span><span><a href="/blog/" style="color:inherit;text-decoration:none">blog</a></span><span class="active">automazione-ai-workflow</span></span>
+    </div>
+    <div class="right">
+      <span>Giugno 2026</span>
+      <span>7 min lettura</span>
+    </div>
+  </div>
+
+  <article>
+    <header class="art-hero">
+      <div class="art-meta">
+        <span class="tag">[ n8n ]</span>
+        <span class="tag">[ python ]</span>
+        <span class="tag">[ processi ]</span>
+        <span>9 Giugno 2026 · Fabio Fidone</span>
+      </div>
+      <h1 class="art-h1">
+        <span class="acc">&gt;</span> Automazione AI: cosa vale<br>davvero la pena automatizzare<br>(e cosa no)
+      </h1>
+      <p class="art-lede">14.000 ore con LLM mi hanno insegnato una cosa: automatizzare tutto è sbagliato quanto non automatizzare nulla. Ecco il framework che uso per decidere, prima di scrivere una riga di codice.</p>
+    </header>
+
+    <div class="art-body">
+
+      <p>La prima domanda che faccio sempre quando mi contatta un'azienda è: "cosa stai cercando di automatizzare?". La risposta più frequente è "tutto quello che si riesce". Questa è la risposta sbagliata — e di solito indica che stiamo per sprecare tempo e denaro.</p>
+
+      <p>L'automazione AI ben fatta libera ore reali, riduce errori umani su compiti ripetitivi, e scala senza assumere. L'automazione AI mal fatta crea sistemi fragili che rompono in modi silenziosi, generano output sbagliati che nessuno controlla, e costano più del lavoro manuale che avrebbero dovuto sostituire.</p>
+
+      <h2><span class="acc">#</span> Il framework: 3 domande prima di ogni automazione</h2>
+
+      <p>Quando valuto un processo da automatizzare con AI, rispondo a tre domande:</p>
+
+      <h3>1. Il processo è ripetitivo, ad alto volume, e ben definito?</h3>
+      <p>Classificare 500 email al giorno in categorie predefinite: sì, automatizzabile. Decidere se accettare un cliente enterprise con contesto legale, storico e sensibilità politica: no, richiede giudizio umano. Il discrimine non è la difficoltà cognitiva del task, è la variabilità del contesto e il costo dell'errore.</p>
+
+      <h3>2. Cosa succede quando il sistema sbaglia?</h3>
+      <p>Un sistema che classifica male il 3% delle email di supporto e le manda al reparto sbagliato: accettabile se c'è un fallback umano. Un sistema che processa automaticamente rimborsi o decide se escalare un caso legale: il 3% di errori può essere catastrofico. La tolleranza all'errore deve essere definita prima dell'implementazione, non dopo.</p>
+
+      <h3>3. Riesci a misurare il successo in modo oggettivo?</h3>
+      <p>Se non sai come misurare se il sistema funziona — con metriche concrete, non "sembra funzionare" — non stai costruendo un sistema, stai sperando. Definisci prima la metrica di successo: accuracy, recall, tempo risparmiato, riduzione ticket, tasso di escalation. Se non riesci a definirla, il problema non è abbastanza concreto da automatizzare.</p>
+
+      <h2><span class="acc">#</span> Cosa automatizzare: i casi ad alto ROI</h2>
+
+      <div class="art-matrix">
+        <div class="art-matrix-title">// matrice ROI automazione AI</div>
+        <div class="art-matrix-row">
+          <div class="art-matrix-label">Classificazione e routing email/ticket</div>
+          <div class="art-matrix-score high">ROI alto · settimane</div>
+        </div>
+        <div class="art-matrix-row">
+          <div class="art-matrix-label">Estrazione dati strutturati da PDF/form</div>
+          <div class="art-matrix-score high">ROI alto · giorni</div>
+        </div>
+        <div class="art-matrix-row">
+          <div class="art-matrix-label">Risposta a FAQ con knowledge base</div>
+          <div class="art-matrix-score high">ROI alto · settimane</div>
+        </div>
+        <div class="art-matrix-row">
+          <div class="art-matrix-label">Generazione bozze report/email standard</div>
+          <div class="art-matrix-score mid">ROI medio · mesi</div>
+        </div>
+        <div class="art-matrix-row">
+          <div class="art-matrix-label">Riassunti di documenti lunghi</div>
+          <div class="art-matrix-score mid">ROI medio · settimane</div>
+        </div>
+        <div class="art-matrix-row">
+          <div class="art-matrix-label">Monitoraggio anomalie e alerting</div>
+          <div class="art-matrix-score mid">ROI medio · mesi</div>
+        </div>
+        <div class="art-matrix-row">
+          <div class="art-matrix-label">Generazione contenuti marketing originali</div>
+          <div class="art-matrix-score low">ROI variabile · richiede supervisione</div>
+        </div>
+        <div class="art-matrix-row">
+          <div class="art-matrix-label">Decisioni su casi borderline/sensibili</div>
+          <div class="art-matrix-score low">Non automatizzare</div>
+        </div>
+      </div>
+
+      <h2><span class="acc">#</span> Cosa non automatizzare (ancora)</h2>
+
+      <div class="art-grid-2">
+        <div class="art-grid-cell">
+          <div class="art-grid-cell-title yes">[ automatizza ]</div>
+          <ul>
+            <li>Classificazione con output verificabile</li>
+            <li>Estrazione dati da template fissi</li>
+            <li>FAQ con risposte pre-approvate</li>
+            <li>Report aggregati su dati strutturati</li>
+            <li>Notifiche su eventi rule-based</li>
+            <li>Traduzione di documenti interni</li>
+          </ul>
+        </div>
+        <div class="art-grid-cell">
+          <div class="art-grid-cell-title no">[ non automatizzare ]</div>
+          <ul>
+            <li>Decisioni con implicazioni legali</li>
+            <li>Valutazioni di persone o candidati</li>
+            <li>Comunicazioni con forte componente emotiva</li>
+            <li>Processi con contesto altamente variabile</li>
+            <li>Qualsiasi cosa dove l'errore è irreversibile</li>
+            <li>Dove non puoi misurare la qualità dell'output</li>
+          </ul>
+        </div>
+      </div>
+
+      <h2><span class="acc">#</span> Gli strumenti che uso</h2>
+
+      <p>Per workflow semplici con integrazioni SaaS: <strong>n8n self-hosted</strong>. È lo strumento che consiglio quasi sempre come punto di partenza. Visual, potente, open source, self-hosted — nessun costo per esecuzione come Zapier o Make. Se il workflow diventa complesso, integra Python tramite node HTTP o code node.</p>
+
+      <p>Per pipeline con logica personalizzata, ML o accesso a database: <strong>Python</strong>. Nessuna magia nascosta, pieno controllo, facile da testare e monitorare. La complessità che n8n nasconde con nodi visivi diventa una black box difficile da debuggare in produzione.</p>
+
+      <p>Per orchestrazione di agent AI: dipende. Uso <strong>chiamate dirette alle API</strong> di OpenAI/Anthropic per il 90% dei casi. LangChain solo quando le sue astrazioni portano valore reale (retrieval, tool use strutturato). LlamaIndex per pipeline RAG. Mai usare un framework solo perché è di moda.</p>
+
+      <div class="art-callout">
+        <p><strong>La regola che mi ha salvato più volte:</strong> costruisci il workflow con human-in-the-loop per i primi 30 giorni. Non per mancanza di fiducia nel sistema, ma per raccogliere i casi edge che non hai previsto. Solo dopo aver visto 500+ esecuzioni reali, togli la supervisione dai casi critici.</p>
+      </div>
+
+      <h2><span class="acc">#</span> Un esempio reale</h2>
+
+      <p>Un cliente con un team di 8 persone riceveva circa 300 email di supporto al giorno. Il 60% erano variazioni delle stesse 15 domande. Il 25% richiedeva un esperto tecnico. Il 15% erano richieste commerciali da passare al sales.</p>
+
+      <p>La soluzione: classificazione automatica con Claude Haiku (precisa al 94% sul dataset di test), routing al team corretto, risposta automatica alle FAQ con supervisione umana spot-check su 5% dei casi. Risultato: da 8 ore/giorno di smistamento manuale a 45 minuti. Il team ora gestisce il 100% dei ticket tecnici invece di smistare email.</p>
+
+      <p>Il sistema non è stato costruito in un giorno. La prima settimana ho analizzato 1.000 email storiche, costruito il dataset di classificazione, definito le categorie con il team. La seconda settimana ho costruito il prototipo con supervisione totale. Solo alla terza settimana ho cominciato a rimuovere la supervisione dagli slot a basso rischio.</p>
+
+      <p>Se vuoi esplorare cosa si può automatizzare nel tuo caso specifico, <a href="/consulenze-ai/">parlami del tuo processo</a>. Oppure guarda altri progetti sul <a href="/portfolio/">portfolio</a> — o seguimi su <a href="https://t.me/ai_prompt_lab_ITA" target="_blank" rel="noopener">AI Prompt Lab ITA</a> dove condivido workflow pratici ogni settimana.</p>
+
+    </div>
+
+    <section class="art-faq">
+      <div style="padding:20px 56px 16px;border-bottom:1px solid var(--border)">
+        <h2 style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text-muted);font-weight:600;margin:0">// FAQ</h2>
+      </div>
+
+      <div class="art-faq-item">
+        <p class="art-faq-q">Cosa si può automatizzare con l'intelligenza artificiale?</p>
+        <p class="art-faq-a">Classificazione e routing di testi (email, ticket), estrazione di dati strutturati da documenti non strutturati, risposta a FAQ con knowledge base, generazione di bozze per contenuti ripetitivi (report, email standard), riassunti di documenti, monitoraggio anomalie su dati. I processi ad alto ROI sono quelli ad alto volume, bassa variabilità di contesto, e output verificabile.</p>
+      </div>
+
+      <div class="art-faq-item">
+        <p class="art-faq-q">Quanto risparmia un'azienda con l'automazione AI?</p>
+        <p class="art-faq-a">Dipende dal processo. Smistamento email di supporto: risparmio tipico 6-15 ore/settimana per team da 5-10 persone. Estrazione dati da documenti: riduzione 70-90% del tempo manuale. Risposta FAQ automatizzata: 40-60% delle richieste gestite senza intervento umano. Il ROI si calcola in settimane per processi ad alto volume e costo del lavoro elevato.</p>
+      </div>
+
+      <div class="art-faq-item">
+        <p class="art-faq-q">Quali tool si usano per l'automazione AI?</p>
+        <p class="art-faq-a">n8n (self-hosted, open source) per workflow no-code/low-code con integrazioni SaaS. Python per pipeline con logica personalizzata, ML o database. Make/Zapier per integrazioni veloci senza server. Per la parte AI: API di OpenAI o Anthropic direttamente, LangChain o LlamaIndex per casi con retrieval complesso. Evito framework pesanti quando una chiamata API diretta basta.</p>
+      </div>
+
+      <div class="art-faq-item">
+        <p class="art-faq-q">Quanto ci vuole per implementare un'automazione AI?</p>
+        <p class="art-faq-a">Un workflow semplice (classificazione email, estrazione dati da template fisso): 1-2 settimane incluso testing. Un sistema più complesso con RAG, integrazioni CRM e supervisione umana integrata: 4-8 settimane. La variabile più imprevedibile è sempre la qualità e la struttura dei dati storici da cui costruire il dataset di training/validazione.</p>
+      </div>
+    </section>
+
+    <div class="art-cta">
+      <div style="font-size:10px;color:var(--yellow);letter-spacing:.06em;margin-bottom:12px">[ prossimo passo ]</div>
+      <h2 style="font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:700;margin:0 0 12px;letter-spacing:-0.015em">Hai un processo da analizzare?</h2>
+      <p style="font-family:'Geist',sans-serif;font-size:14px;color:var(--text-muted);line-height:1.65;max-width:520px;margin:0 0 24px">Descrivimi il workflow: quante persone, quante ore, che tipo di task. Ti dico in 30 minuti se vale la pena automatizzare, come, e con che aspettative realistiche di ROI.</p>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center">
+        <a class="tm-btn primary" href="/consulenze-ai/">Analizza il mio processo →</a>
+        <a class="tm-btn ghost" href="/servizi/">Tutti i servizi →</a>
+      </div>
+    </div>
+  </article>
+
+  <nav style="padding:24px 56px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px">
+    <a href="/blog/rag-pipeline-documenti/" style="color:var(--text-muted);text-decoration:none;font-size:12px">← RAG pipeline documenti</a>
+    <a href="/blog/notifiche-whatsapp-senza-api-meta/" style="color:var(--yellow);text-decoration:none;font-size:12px">notifiche WhatsApp senza API Meta →</a>
+  </nav>
+
+</main>
+
+<footer class="layout-embed">
+  <iframe src="/assets/layout/footer.html" title="Footer" class="layout-frame layout-frame-footer" scrolling="no"></iframe>
+</footer>
+
+</body>
+</html>

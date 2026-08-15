@@ -1,0 +1,45 @@
+name: Pubblica articolo blog fabiofidone.it
+
+on:
+  schedule:
+    # Lunedi' e giovedi' alle 17:00 UTC (~19:00 ora italiana estiva)
+    - cron: "0 17 * * 1,4"
+  workflow_dispatch: {}   # bottone "Run workflow" per lanciare un test manuale
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Genera articolo e aggiorna il sito
+        working-directory: pipeline
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          WHATSAPP_PHONE: ${{ secrets.WHATSAPP_PHONE }}
+          WHATSAPP_APIKEY: ${{ secrets.WHATSAPP_APIKEY }}
+        run: python generate_article.py
+
+      - name: Commit modifiche nel repository
+        run: |
+          git config user.name "fabiofidone-blog-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add site/ pipeline/topics_covered.json
+          git diff --staged --quiet || git commit -m "Nuovo articolo blog automatico [skip ci]"
+          git push
+
+      - name: Pubblica su Aruba via FTP (solo la cartella blog/)
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./site/blog/
+          server-dir: ./blog/
+          dangerous-clean-slate: false

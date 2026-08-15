@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Blog — Fabio Fidone | AI Engineer, Automazioni, Bot e LLM in produzione</title>
+<meta name="description" content="Articoli pratici su AI, automazione processi, bot Telegram, pipeline RAG e LLM. Scritti da chi li usa in produzione ogni giorno, non da chi li spiega in slide.">
+<link rel="canonical" href="https://www.fabiofidone.it/blog/">
+<meta property="og:title" content="Blog — Fabio Fidone | AI in produzione">
+<meta property="og:description" content="Articoli pratici su AI, automazione e bot. Niente slide, solo roba che funziona.">
+<meta property="og:url" content="https://www.fabiofidone.it/blog/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Fabio Fidone">
+<meta property="og:locale" content="it_IT">
+<meta property="og:image" content="https://www.fabiofidone.it/images/logo_square.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Blog — Fabio Fidone | AI in produzione">
+<meta name="twitter:image" content="https://www.fabiofidone.it/images/logo_square.png">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Blog","name":"Blog di Fabio Fidone","url":"https://www.fabiofidone.it/blog/","description":"Articoli pratici su AI, automazione, bot Telegram e pipeline LLM in produzione.","author":{"@type":"Person","name":"Fabio Fidone","url":"https://www.fabiofidone.it/"}}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/css/styles.css">
+<style>
+.bl-hero { padding: 56px 56px 40px; border-bottom: 1px solid var(--border); }
+.bl-prompt { color: var(--yellow); font-size: 12px; margin-bottom: 8px; letter-spacing: .02em; }
+.bl-h1 { font-family: 'JetBrains Mono', monospace; font-size: 48px; line-height: 1.05; font-weight: 700; letter-spacing: -0.02em; margin: 8px 0 16px; }
+.bl-h1 .acc { color: var(--yellow); }
+.bl-lede { font-family: 'Geist', sans-serif; font-size: 16px; line-height: 1.6; max-width: 600px; color: var(--text-soft, var(--text-muted)); margin: 0; }
+.bl-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); margin: 0; }
+.bl-card { background: var(--surface); padding: 32px; display: flex; flex-direction: column; gap: 12px; text-decoration: none; color: inherit; transition: background .15s; }
+.bl-card:hover { background: color-mix(in oklch, var(--surface), var(--yellow) 4%); }
+.bl-cat { font-size: 10px; color: var(--yellow); letter-spacing: .06em; font-weight: 600; }
+.bl-card h2 { font-family: 'JetBrains Mono', monospace; font-size: 18px; font-weight: 600; line-height: 1.25; margin: 0; color: var(--text); }
+.bl-card p { font-family: 'Geist', sans-serif; font-size: 13px; line-height: 1.65; color: var(--text-muted); margin: 0; flex: 1; }
+.bl-card-foot { margin-top: auto; padding-top: 16px; border-top: 1px dashed var(--border); display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); }
+.bl-card-foot .go { color: var(--yellow); }
+.bl-empty { padding: 56px; text-align: center; color: var(--text-muted); font-size: 13px; }
+.cookie-banner { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--border); color: var(--text); padding: 18px 24px; z-index: 9999; font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+.cookie-banner.hidden { display: none; }
+.cookie-content { max-width: 1280px; margin: 0 auto; display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
+.cookie-text { flex: 1; min-width: 200px; line-height: 1.5; color: var(--text-muted); }
+.cookie-text a { color: var(--yellow); text-decoration: none; }
+.cookie-buttons { display: flex; gap: 8px; flex-wrap: wrap; }
+.cookie-btn { padding: 8px 18px; border: none; cursor: pointer; font-size: 12px; font-weight: 600; font-family: 'JetBrains Mono', monospace; transition: opacity .15s; white-space: nowrap; }
+.cookie-btn-accept { background: var(--yellow); color: oklch(0.16 0.014 60); }
+.cookie-btn-reject { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
+.cookie-btn:hover { opacity: .8; }
+@media(max-width:900px){
+  .bl-hero { padding: 32px 20px; }
+  .bl-h1 { font-size: 32px; }
+  .bl-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<a href="#main" class="skip-link">Salta al contenuto</a>
+
+<div id="cookie-banner" class="cookie-banner">
+  <div class="cookie-content">
+    <div class="cookie-text">
+      <strong style="color:var(--text)">// cookie_consent</strong> —
+      Usiamo cookie tecnici (necessari) e analytics Plausible (consensuale).
+      <a href="/cookie-policy/" target="_blank">cookie-policy</a> ·
+      <a href="/privacy-policy/" target="_blank">privacy-policy</a>
+    </div>
+    <div class="cookie-buttons">
+      <button class="cookie-btn cookie-btn-reject" onclick="rejectCookies()">[ rifiuta ]</button>
+      <button class="cookie-btn cookie-btn-accept" onclick="acceptCookies()">[ accetta ]</button>
+    </div>
+  </div>
+</div>
+<script>
+  var COOKIE_NAME='cookie_consent',COOKIE_DURATION=7*24*60*60*1000;
+  function initCookieConsent(){var c=getCookie(COOKIE_NAME);if(c===null){showBanner();}else if(c==='accepted'){hideBanner();loadPlausible();}else{hideBanner();}}
+  function showBanner(){var b=document.getElementById('cookie-banner');if(b)b.classList.remove('hidden');}
+  function hideBanner(){var b=document.getElementById('cookie-banner');if(b)b.classList.add('hidden');}
+  function acceptCookies(){setCookie(COOKIE_NAME,'accepted',COOKIE_DURATION);hideBanner();loadPlausible();}
+  function rejectCookies(){setCookie(COOKIE_NAME,'rejected',COOKIE_DURATION);hideBanner();}
+  function loadPlausible(){if(!window.plausible){var s=document.createElement('script');s.async=s.defer=true;s.src='https://plausible.io/js/script.js';s.dataset.domain='fabiofidone.it';document.head.appendChild(s);}}
+  function setCookie(n,v,d){var e=new Date(Date.now()+d);document.cookie=n+'='+v+';expires='+e.toUTCString()+';path=/;SameSite=Lax';}
+  function getCookie(n){var eq=n+'=',cs=document.cookie.split(';');for(var i=0;i<cs.length;i++){var c=cs[i].trim();if(c.startsWith(eq))return c.substring(eq.length);}return null;}
+  if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',initCookieConsent);}else{initCookieConsent();}
+</script>
+
+<header class="layout-embed">
+  <iframe src="/assets/layout/navbar.html" title="Navigazione principale" class="layout-frame layout-frame-nav" scrolling="no"></iframe>
+</header>
+
+<main id="main" class="wrap">
+
+  <div class="tm-bar">
+    <div class="left">
+      <span class="dot"></span>
+      <span class="crumbs"><span>~</span><span>fabiofidone</span><span class="active">blog</span></span>
+    </div>
+    <div class="right">
+      <span>branch <span class="ok">main</span></span>
+      <span><span class="ok">●</span> <!--CONTATORE_A-->5 articoli<!--/CONTATORE_A--></span>
+      <span>v2026</span>
+    </div>
+  </div>
+
+  <header class="bl-hero">
+    <div class="bl-prompt">$ ls blog/</div>
+    <h1 class="bl-h1">
+      <span class="acc">&gt;</span> AI in produzione.<br>
+      <span style="color:var(--text-muted)">// non in PowerPoint.</span>
+    </h1>
+    <p class="bl-lede">Scrivo di quello che faccio ogni giorno: bot, automazioni, pipeline LLM, agent loop. Senza filtri, senza parole d'ordine. Solo roba che funziona.</p>
+  </header>
+
+  <section style="border-bottom:1px solid var(--border)">
+    <div class="tm-head" style="padding:20px 32px 16px">
+      <h2 style="font-size:13px;color:var(--text-muted);font-weight:600;margin:0">// articoli --recenti</h2>
+      <span style="font-size:11px;color:var(--text-muted);opacity:.7"><!--CONTATORE_B-->5 articoli<!--/CONTATORE_B--></span>
+    </div>
+    <div class="bl-grid">
+
+      <a href="/blog/bot-telegram-azienda/" class="bl-card">
+        <div class="bl-cat">[ automazione · bot ]</div>
+        <h2>Come creare un bot Telegram per la tua azienda (guida pratica 2026)</h2>
+        <p>Dal primo webhook alla notifica automatica: cosa serve davvero, quanto costa, e i 3 errori che fanno fallire il 90% dei progetti bot.</p>
+        <div class="bl-card-foot">
+          <span>Giugno 2026 · 8 min</span>
+          <span class="go">leggi.md →</span>
+        </div>
+      </a>
+
+      <a href="/blog/rag-pipeline-documenti/" class="bl-card">
+        <div class="bl-cat">[ LLM · architettura ]</div>
+        <h2>RAG: come trasformare i tuoi documenti aziendali in un assistente AI</h2>
+        <p>Cos'è una pipeline RAG, come funziona davvero, e perché il 70% delle implementazioni fallisce ancora prima del collaudo.</p>
+        <div class="bl-card-foot">
+          <span>Giugno 2026 · 10 min</span>
+          <span class="go">leggi.md →</span>
+        </div>
+      </a>
+
+      <a href="/blog/automazione-ai-workflow/" class="bl-card">
+        <div class="bl-cat">[ n8n · python · processi ]</div>
+        <h2>Automazione AI: cosa vale davvero la pena automatizzare (e cosa no)</h2>
+        <p>14.000 ore con LLM mi hanno insegnato una cosa: automatizzare tutto è sbagliato quanto non automatizzare nulla. Ecco come scegliere.</p>
+        <div class="bl-card-foot">
+          <span>Giugno 2026 · 7 min</span>
+          <span class="go">leggi.md →</span>
+        </div>
+      </a>
+
+      <a href="/blog/notifiche-whatsapp-senza-api-meta/" class="bl-card">
+        <div class="bl-cat">[ automazione · WhatsApp ]</div>
+        <h2>Notifiche WhatsApp automatiche senza le API a pagamento di Meta</h2>
+        <p>Come collegare un'automazione a WhatsApp senza account Business e senza costo per messaggio — e dove questo approccio si ferma davvero.</p>
+        <div class="bl-card-foot">
+          <span>Agosto 2026 · 7 min</span>
+          <span class="go">leggi.md →</span>
+        </div>
+      </a>
+
+      <a href="/blog/domotica-ai-home-assistant/" class="bl-card">
+        <div class="bl-cat">[ domotica · Home Assistant ]</div>
+        <h2>Automazioni per la casa con AI: dove serve davvero e dove no</h2>
+        <p>Il 70% dei progetti domotici con AI muore perché si automatizza quello sbagliato. Cosa vale la pena fare con un LLM in casa, e cosa resta meglio a una regola YAML.</p>
+        <div class="bl-card-foot">
+          <span>Agosto 2026 · 9 min</span>
+          <span class="go">leggi.md →</span>
+        </div>
+      </a>
+
+      <!--NUOVA_CARD_QUI-->
+    </div>
+  </section>
+
+  <section style="padding:48px 56px;border-bottom:1px solid var(--border)">
+    <div style="display:flex;gap:40px;align-items:flex-start;flex-wrap:wrap">
+      <div style="flex:1;min-width:260px">
+        <div style="font-size:10px;color:var(--yellow);letter-spacing:.06em;margin-bottom:12px">[ newsletter · settimanale ]</div>
+        <h2 style="font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:600;margin:0 0 10px;letter-spacing:-0.01em">Vuoi sapere quando pubblico?</h2>
+        <p style="font-family:'Geist',sans-serif;font-size:13px;color:var(--text-muted);line-height:1.65;max-width:460px;margin:0 0 20px">Iscriviti alla mailing list. Ricevi i nuovi articoli, aggiornamenti sui corsi e qualche insight tecnico che non finisce sul blog. Zero spam, un'email ogni 2 settimane.</p>
+        <a class="tm-btn primary" href="/mailing-list/">Iscriviti alla lista →</a>
+      </div>
+      <div style="flex:1;min-width:260px">
+        <div style="font-size:10px;color:var(--teal);letter-spacing:.06em;margin-bottom:12px">[ telegram · 3 prompt/giorno ]</div>
+        <h2 style="font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:600;margin:0 0 10px;letter-spacing:-0.01em">Ogni giorno su Telegram</h2>
+        <p style="font-family:'Geist',sans-serif;font-size:13px;color:var(--text-muted);line-height:1.65;max-width:460px;margin:0 0 20px">AI Prompt Lab ITA: 3 prompt operativi ogni giorno per ChatGPT, Claude e Midjourney. 2.100+ professionisti già dentro.</p>
+        <a class="tm-btn" href="https://t.me/ai_prompt_lab_ITA" target="_blank" rel="noopener" style="border:1px solid var(--teal);color:var(--teal)">Unisciti al canale →</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="layout-embed">
+  <iframe src="/assets/layout/footer.html" title="Footer" class="layout-frame layout-frame-footer" scrolling="no"></iframe>
+</footer>
+
+</body>
+</html>

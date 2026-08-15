@@ -1,0 +1,22 @@
+{
+  "pubblicati": [
+    {"slug": "bot-telegram-azienda", "titolo": "Come creare un bot Telegram per la tua azienda", "data": "2026-06-09"},
+    {"slug": "rag-pipeline-documenti", "titolo": "RAG: come trasformare i tuoi documenti aziendali in un assistente AI", "data": "2026-06-09"},
+    {"slug": "automazione-ai-workflow", "titolo": "Automazione AI: cosa vale davvero la pena automatizzare", "data": "2026-06-09"},
+    {"slug": "notifiche-whatsapp-senza-api-meta", "titolo": "Notifiche WhatsApp automatiche senza le API a pagamento di Meta", "data": "2026-08-15"}
+  ],
+  "backlog_argomenti": [
+    {"slug": "domotica-ai-home-assistant", "titolo": "Automazioni per la casa con AI: cosa ho imparato costruendo un sistema domotico reale", "categoria": "[ domotica · Home Assistant ]"},
+    {"slug": "chatgpt-claude-gemini-aziende", "titolo": "ChatGPT, Claude o Gemini: come scegliere il modello giusto per la tua azienda", "categoria": "[ LLM · strategia ]"},
+    {"slug": "quanto-costa-assistente-ai-su-misura", "titolo": "Quanto costa davvero un assistente AI su misura (guida prezzi 2026)", "categoria": "[ costi · consulenza ]"},
+    {"slug": "n8n-vs-python-automazione", "titolo": "n8n vs Python custom: quando conviene l'uno o l'altro per automatizzare processi", "categoria": "[ n8n · python · processi ]"},
+    {"slug": "prompt-engineering-pmi-errori", "titolo": "Prompt engineering per PMI: gli errori più comuni e come evitarli", "categoria": "[ prompt engineering · PMI ]"},
+    {"slug": "chatbot-customer-service-aspettative", "titolo": "Chatbot per il customer service: cosa aspettarsi davvero (e cosa no)", "categoria": "[ chatbot · customer service ]"},
+    {"slug": "ocr-automazione-documentale-ai", "titolo": "OCR e automazione documentale con AI: casi reali e limiti pratici", "categoria": "[ OCR · automazione documentale ]"},
+    {"slug": "monitoraggio-energetico-ai-fotovoltaico", "titolo": "Monitoraggio energetico smart: come collegare fotovoltaico e domotica con l'AI", "categoria": "[ domotica · fotovoltaico ]"},
+    {"slug": "integrare-ai-crm-esistente", "titolo": "Come integrare l'AI in un CRM esistente senza riscrivere tutto", "categoria": "[ CRM · integrazione ]"},
+    {"slug": "sicurezza-ai-processi-aziendali", "titolo": "Sicurezza e AI: cosa considerare prima di automatizzare processi aziendali", "categoria": "[ sicurezza · compliance ]"},
+    {"slug": "agenti-ai-autonomi-oggi", "titolo": "Agenti AI autonomi: cosa possono fare davvero oggi, senza hype", "categoria": "[ agent · LLM ]"},
+    {"slug": "email-marketing-ai-tono-umano", "titolo": "Automazione email marketing con AI senza perdere il tono umano", "categoria": "[ marketing · automazione ]"}
+  ]
+}
