@@ -7,7 +7,7 @@ on:
   workflow_dispatch: {}   # bottone "Run workflow" per lanciare un test manuale
   push:
     branches: [main]
-    paths: [".github/workflows/publish-blog.yml", "pipeline/topics_covered.json"]   # TEMPORANEO: solo per test, va rimosso dopo
+    paths: [".github/workflows/publish-blog.yml", "pipeline/topics_covered.json"]   # TEMPORANEO: solo per test, va rimosso dopo (retest FTP dopo rimozione limitazioni IP Aruba)
 
 permissions:
   contents: write   # senza questo il GITHUB_TOKEN di default e' sola-lettura e il push del commit automatico fallisce con 403
