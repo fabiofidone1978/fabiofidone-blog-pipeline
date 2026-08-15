@@ -58,7 +58,7 @@ jobs:
       - name: Notifica successo su WhatsApp
         if: success()
         run: |
-          curl -s "https://api.callmebot.com/whatsapp.php" \
+          curl -s -G "https://api.callmebot.com/whatsapp.php" \
             --data-urlencode "phone=${{ secrets.WHATSAPP_PHONE }}" \
             --data-urlencode "text=Nuovo articolo blog PUBBLICATO: \"${{ steps.generate.outputs.titolo }}\" — https://www.fabiofidone.it/blog/${{ steps.generate.outputs.slug }}/" \
             --data-urlencode "apikey=${{ secrets.WHATSAPP_APIKEY }}"
@@ -66,7 +66,7 @@ jobs:
       - name: Notifica fallimento su WhatsApp (commit o upload FTP)
         if: failure()
         run: |
-          curl -s "https://api.callmebot.com/whatsapp.php" \
+          curl -s -G "https://api.callmebot.com/whatsapp.php" \
             --data-urlencode "phone=${{ secrets.WHATSAPP_PHONE }}" \
             --data-urlencode "text=Blog fabiofidone.it: il run e' fallito nel commit o nell'upload FTP (non nella generazione) — controlla i log su GitHub Actions" \
             --data-urlencode "apikey=${{ secrets.WHATSAPP_APIKEY }}"
