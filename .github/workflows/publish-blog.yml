@@ -5,9 +5,6 @@ on:
     # Lunedi' e giovedi' alle 17:00 UTC (~19:00 ora italiana estiva)
     - cron: "0 17 * * 1,4"
   workflow_dispatch: {}   # bottone "Run workflow" per lanciare un test manuale
-  push:
-    branches: [main]
-    paths: [".github/workflows/publish-blog.yml", "pipeline/topics_covered.json"]   # TEMPORANEO: solo per test, va rimosso dopo (retest dopo fix regex sicurezza)
 
 permissions:
   contents: write   # senza questo il GITHUB_TOKEN di default e' sola-lettura e il push del commit automatico fallisce con 403
