@@ -187,7 +187,11 @@ def estrai_contenuto(testo_grezzo):
 def valida_contenuto(c):
     if not c["body_html"] or len(c["body_html"]) < 100:
         raise ValueError("body_html troppo corto o vuoto — scartato")
-    vietati = re.compile(r"<script|<iframe|<style|on\w+\s*=", re.IGNORECASE)
+    # \b prima di "on" e la virgoletta dopo "=" sono essenziali: senza,
+    # la regex intercetta anche parole italiane normali come "condizione="
+    # o "posizione=" (contengono "on" seguito da lettere) — capitato
+    # davvero in un articolo sui prezzi, falso positivo verificato.
+    vietati = re.compile(r"<script|<iframe|<style|\bon\w+\s*=\s*[\"']", re.IGNORECASE)
     if vietati.search(c["body_html"]):
         raise ValueError("body_html contiene tag/attributi non ammessi — scartato per sicurezza")
 
