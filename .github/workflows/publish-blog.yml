@@ -54,7 +54,7 @@ jobs:
       # pensata esattamente per questo caso. Non garantisce l'indicizzazione,
       # solo la notifica tempestiva del nuovo contenuto.
       - name: Notifica IndexNow (Bing e altri motori aderenti)
-        if: success()
+        if: success() && steps.generate.outputs.slug != ''
         run: |
           curl -s -X POST "https://api.indexnow.org/indexnow" \
             -H "Content-Type: application/json; charset=utf-8" \
@@ -70,7 +70,7 @@ jobs:
       # quello scrive solo file in locale nel runner, non sa se poi git push
       # o l'upload FTP falliscono dopo di lui.
       - name: Notifica successo su WhatsApp
-        if: success()
+        if: success() && steps.generate.outputs.slug != ''
         run: |
           curl -s -G "https://api.callmebot.com/whatsapp.php" \
             --data-urlencode "phone=${{ secrets.WHATSAPP_PHONE }}" \
