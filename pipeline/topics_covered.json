@@ -141,6 +141,56 @@
       "slug": "email-marketing-ai-tono-umano",
       "titolo": "Automazione email marketing con AI senza perdere il tono umano",
       "categoria": "[ marketing · automazione ]"
+    },
+    {
+      "slug": "fine-tuning-vs-rag",
+      "titolo": "Fine-tuning o RAG: come scegliere per il tuo caso d'uso",
+      "categoria": "[ LLM · RAG · fine-tuning ]"
+    },
+    {
+      "slug": "gdpr-ai-fornitori-llm",
+      "titolo": "GDPR e AI: cosa verificare davvero prima di usare un LLM in azienda",
+      "categoria": "[ GDPR · compliance · LLM ]"
+    },
+    {
+      "slug": "manutenzione-bot-telegram",
+      "titolo": "Manutenzione di un bot Telegram: cosa si rompe più spesso (e come prevenirlo)",
+      "categoria": "[ Telegram · bot · manutenzione ]"
+    },
+    {
+      "slug": "quando-non-usare-agenti-ai",
+      "titolo": "Quando un agente AI autonomo non è la soluzione giusta",
+      "categoria": "[ agent · limiti · automazione ]"
+    },
+    {
+      "slug": "backup-disaster-recovery-automazione-ai",
+      "titolo": "Backup e disaster recovery per sistemi automatizzati con AI: la parte che nessuno progetta",
+      "categoria": "[ backup · disaster recovery ]"
+    },
+    {
+      "slug": "roi-progetti-automazione-ai",
+      "titolo": "Come misurare il ROI reale di un progetto di automazione AI",
+      "categoria": "[ ROI · consulenza ]"
+    },
+    {
+      "slug": "automazione-fatturazione-contabilita-ai",
+      "titolo": "Automazione di fatturazione e contabilità con AI: cosa si può fare davvero",
+      "categoria": "[ contabilità · PMI ]"
+    },
+    {
+      "slug": "customer-support-multicanale-ai",
+      "titolo": "Customer support multicanale con AI: unificare email, WhatsApp e Telegram",
+      "categoria": "[ customer service · multicanale ]"
+    },
+    {
+      "slug": "monitoraggio-logging-pipeline-ai",
+      "titolo": "Monitoraggio e logging di una pipeline AI in produzione: cosa loggare e perché",
+      "categoria": "[ logging · monitoraggio ]"
+    },
+    {
+      "slug": "sicurezza-iot-domotica-ai",
+      "titolo": "Sicurezza IoT in un impianto domotico con AI: i rischi che si sottovalutano",
+      "categoria": "[ IoT · sicurezza · domotica ]"
     }
   ]
 }
