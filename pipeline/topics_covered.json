@@ -79,6 +79,11 @@
       "slug": "email-marketing-ai-tono-umano",
       "titolo": "Automazione email marketing con AIsenza perdere il tono umano",
       "data": "2026-08-28"
+    },
+    {
+      "slug": "fine-tuning-vs-rag",
+      "titolo": "Fine-tuning o RAG: come scegliere per il tuo caso d'uso",
+      "data": "2026-09-07"
     }
   ],
   "backlog_argomenti": [
