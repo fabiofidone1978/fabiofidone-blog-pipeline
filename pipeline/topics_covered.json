@@ -84,6 +84,11 @@
       "slug": "fine-tuning-vs-rag",
       "titolo": "Fine-tuning o RAG: come scegliere per il tuo caso d'uso",
       "data": "2026-09-07"
+    },
+    {
+      "slug": "gdpr-ai-fornitori-llm",
+      "titolo": "GDPR e AI: cosa verificare davvero prima di usare un LLM in azienda",
+      "data": "2026-09-10"
     }
   ],
   "backlog_argomenti": [
