@@ -89,6 +89,11 @@
       "slug": "gdpr-ai-fornitori-llm",
       "titolo": "GDPR e AI: cosa verificare davvero prima di usare un LLM in azienda",
       "data": "2026-09-10"
+    },
+    {
+      "slug": "manutenzione-bot-telegram",
+      "titolo": "Manutenzione di un bot Telegram: cosa si rompe più spesso (e come prevenirlo)",
+      "data": "2026-09-14"
     }
   ],
   "backlog_argomenti": [
