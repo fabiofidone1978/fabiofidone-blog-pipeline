@@ -2,12 +2,15 @@ name: Pubblica articolo blog fabiofidone.it
 
 on:
   schedule:
-    # Lunedi' e giovedi' alle 6:00 UTC (~8:00 ora italiana estiva, 7:00
-    # ora solare — cron GitHub Actions e' sempre UTC fisso, non segue il
-    # cambio ora legale: l'orario locale si sposta di un'ora tra le due
-    # stagioni, stesso limite gia' presente nella versione precedente)
-    - cron: "0 6 * * 1,4"
-  workflow_dispatch: {}   # bottone "Run workflow" per lanciare un test manuale
+    # Due trigger, uno per stagione — GitHub Actions cron e' sempre UTC
+    # fisso e non segue il cambio ora legale/solare. Lo step "Verifica
+    # orario locale" sotto scarta subito (prima di qualsiasi chiamata API
+    # o commit) quello dei due che NON corrisponde davvero alle 8:00 in
+    # Italia in quel momento, cosi' l'orario locale resta sempre 8:00
+    # tutto l'anno senza bisogno di cambiarlo manualmente due volte l'anno.
+    - cron: "0 6 * * 1,4"   # 8:00 ora legale (CEST, UTC+2)
+    - cron: "0 7 * * 1,4"   # 8:00 ora solare (CET, UTC+1)
+  workflow_dispatch: {}   # bottone "Run workflow" per lanciare un test manuale (bypassa il controllo orario)
 
 permissions:
   contents: write   # senza questo il GITHUB_TOKEN di default e' sola-lettura e il push del commit automatico fallisce con 403
@@ -16,16 +19,36 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
+      # Con due cron trigger a orari diversi, ad ogni giorno schedulato
+      # GitHub lancia DUE run (uno alle 6:00 UTC, uno alle 7:00 UTC): solo
+      # quello dove l'ora locale italiana e' davvero le 8 deve procedere,
+      # l'altro deve fermarsi qui senza fare nulla (nessun costo: si ferma
+      # prima di checkout, generazione, commit, FTP, LinkedIn). Un run
+      # manuale (workflow_dispatch) bypassa sempre il controllo.
+      - name: Verifica orario locale (Europe/Rome)
+        id: gate
+        run: |
+          ORA_LOCALE=$(TZ="Europe/Rome" date +%H)
+          if [ "${{ github.event_name }}" != "schedule" ] || [ "$ORA_LOCALE" = "08" ]; then
+            echo "should_run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "should_run=false" >> "$GITHUB_OUTPUT"
+            echo "Non sono le 8:00 in Italia (sono le $ORA_LOCALE:00) — questo e' il trigger per l'altro fuso orario, run scartato senza fare nulla."
+          fi
+
       - name: Checkout repository
+        if: steps.gate.outputs.should_run == 'true'
         uses: actions/checkout@v4
 
       - name: Setup Python
+        if: steps.gate.outputs.should_run == 'true'
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
       - name: Genera articolo e aggiorna il sito
         id: generate
+        if: steps.gate.outputs.should_run == 'true'
         working-directory: pipeline
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
@@ -34,6 +57,7 @@ jobs:
         run: python generate_article.py
 
       - name: Commit modifiche nel repository
+        if: steps.gate.outputs.should_run == 'true'
         run: |
           git config user.name "fabiofidone-blog-bot"
           git config user.email "actions@users.noreply.github.com"
@@ -42,6 +66,7 @@ jobs:
           git push
 
       - name: Pubblica su Aruba via FTP (blog/ + sitemap.xml)
+        if: steps.gate.outputs.should_run == 'true'
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
