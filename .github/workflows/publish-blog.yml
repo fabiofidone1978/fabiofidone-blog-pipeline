@@ -2,8 +2,11 @@ name: Pubblica articolo blog fabiofidone.it
 
 on:
   schedule:
-    # Lunedi' e giovedi' alle 17:00 UTC (~19:00 ora italiana estiva)
-    - cron: "0 17 * * 1,4"
+    # Lunedi' e giovedi' alle 6:00 UTC (~8:00 ora italiana estiva, 7:00
+    # ora solare — cron GitHub Actions e' sempre UTC fisso, non segue il
+    # cambio ora legale: l'orario locale si sposta di un'ora tra le due
+    # stagioni, stesso limite gia' presente nella versione precedente)
+    - cron: "0 6 * * 1,4"
   workflow_dispatch: {}   # bottone "Run workflow" per lanciare un test manuale
 
 permissions:
