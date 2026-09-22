@@ -364,6 +364,15 @@ def esegui():
             with open(github_output, "a", encoding="utf-8") as f:
                 f.write(f"titolo={titolo_piano}\n")
                 f.write(f"slug={argomento['slug']}\n")
+                # lede/meta_description usano la sintassi multiline di GitHub
+                # Actions (delimitatore) invece di key=value semplice: sono
+                # testo libero scritto da un LLM, potrebbero contenere "\n"
+                # o altri caratteri che romperebbero un singolo f-string —
+                # servono al passo successivo del workflow per generare il
+                # post LinkedIn (vedi generate_linkedin_post.py).
+                for nome, valore in (("lede", contenuto["lede"]), ("meta_description", contenuto["meta_description"])):
+                    delimitatore = f"EOF_{nome}_{os.urandom(8).hex()}"
+                    f.write(f"{nome}<<{delimitatore}\n{valore}\n{delimitatore}\n")
     else:
         print("FAKE_AI=1 — topics_covered.json NON modificato, nessuna notifica reale inviata.")
 

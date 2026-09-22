@@ -77,6 +77,35 @@ jobs:
             --data-urlencode "text=Nuovo articolo blog PUBBLICATO: \"${{ steps.generate.outputs.titolo }}\" — https://www.fabiofidone.it/blog/${{ steps.generate.outputs.slug }}/" \
             --data-urlencode "apikey=${{ secrets.WHATSAPP_APIKEY }}"
 
+      # Annuncio su LinkedIn — SOLO dopo che l'articolo e' davvero online
+      # (stesso motivo della notifica WhatsApp sopra). continue-on-error:
+      # true e' voluto: se il token LinkedIn e' scaduto (dura ~60gg, limite
+      # di LinkedIn) questo step fallisce ma non deve marcare l'intero job
+      # come fallito, altrimenti scatterebbe anche la notifica di fallimento
+      # "commit o upload FTP" qui sotto, che sarebbe fuorviante — il blog e'
+      # stato pubblicato correttamente, e' solo LinkedIn che non ha funzionato.
+      - name: Genera e pubblica post LinkedIn
+        id: linkedin
+        if: success() && steps.generate.outputs.slug != ''
+        continue-on-error: true
+        working-directory: pipeline
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          LINKEDIN_TOKEN: ${{ secrets.LINKEDIN_TOKEN }}
+          ARTICLE_TITOLO: ${{ steps.generate.outputs.titolo }}
+          ARTICLE_SLUG: ${{ steps.generate.outputs.slug }}
+          ARTICLE_LEDE: ${{ steps.generate.outputs.lede }}
+          ARTICLE_META_DESCRIPTION: ${{ steps.generate.outputs.meta_description }}
+        run: python generate_linkedin_post.py
+
+      - name: Notifica fallimento pubblicazione LinkedIn
+        if: steps.linkedin.outcome == 'failure'
+        run: |
+          curl -s -G "https://api.callmebot.com/whatsapp.php" \
+            --data-urlencode "phone=${{ secrets.WHATSAPP_PHONE }}" \
+            --data-urlencode "text=Blog fabiofidone.it: articolo pubblicato ma post LinkedIn FALLITO (probabile token scaduto, dura ~60gg) — controlla i log su GitHub Actions e rigenera LINKEDIN_TOKEN" \
+            --data-urlencode "apikey=${{ secrets.WHATSAPP_APIKEY }}"
+
       - name: Notifica fallimento su WhatsApp (commit o upload FTP)
         if: failure()
         run: |
