@@ -10,10 +10,24 @@ on:
     # tutto l'anno senza bisogno di cambiarlo manualmente due volte l'anno.
     - cron: "0 6 * * 1,4"   # 8:00 ora legale (CEST, UTC+2)
     - cron: "0 7 * * 1,4"   # 8:00 ora solare (CET, UTC+1)
-  workflow_dispatch: {}   # bottone "Run workflow" per lanciare un test manuale (bypassa il controllo orario)
+  workflow_dispatch:        # bottone "Run workflow" per lanciare un run manuale (bypassa il controllo orario)
+    inputs:
+      solo_deploy:
+        description: "Solo caricamento: NON genera articoli e NON pubblica su LinkedIn, ricarica sul server il contenuto attuale di site/ (per test o riallineamento)"
+        type: boolean
+        default: false
 
 permissions:
   contents: write   # senza questo il GITHUB_TOKEN di default e' sola-lettura e il push del commit automatico fallisce con 403
+
+env:
+  # Server Hetzner fabio-prod-01. L'utente blogdeploy puo' SOLO scrivere via
+  # rsync dentro /var/www/fabiofidone.it (forced command rrsync -no-del nel suo
+  # authorized_keys): niente shell, niente cancellazioni, niente uscita dalla
+  # cartella. Chiave privata e impronta del server nei secret HETZNER_*.
+  HETZNER_HOST: 178.104.245.208
+  HETZNER_USER: blogdeploy
+  SITO: https://www.fabiofidone.it
 
 jobs:
   publish:
@@ -23,7 +37,7 @@ jobs:
       # GitHub lancia DUE run (uno alle 6:00 UTC, uno alle 7:00 UTC): solo
       # quello dove l'ora locale italiana e' davvero le 8 deve procedere,
       # l'altro deve fermarsi qui senza fare nulla (nessun costo: si ferma
-      # prima di checkout, generazione, commit, FTP, LinkedIn). Un run
+      # prima di checkout, generazione, commit, upload, LinkedIn). Un run
       # manuale (workflow_dispatch) bypassa sempre il controllo.
       - name: Verifica orario locale (Europe/Rome)
         id: gate
@@ -35,20 +49,46 @@ jobs:
             echo "should_run=false" >> "$GITHUB_OUTPUT"
             echo "Non sono le 8:00 in Italia (sono le $ORA_LOCALE:00) — questo e' il trigger per l'altro fuso orario, run scartato senza fare nulla."
           fi
+          if [ "${{ inputs.solo_deploy }}" = "true" ]; then
+            echo "genera=false" >> "$GITHUB_OUTPUT"
+            echo "Modalita' SOLO CARICAMENTO: nessun articolo generato, nessun post LinkedIn."
+          else
+            echo "genera=true" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Checkout repository
         if: steps.gate.outputs.should_run == 'true'
         uses: actions/checkout@v4
 
       - name: Setup Python
-        if: steps.gate.outputs.should_run == 'true'
+        if: steps.gate.outputs.should_run == 'true' && steps.gate.outputs.genera == 'true'
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
+      # La sitemap del sito viene modificata anche a mano (pagine nuove fuori
+      # dal blog): se la pipeline partisse dalla copia nel repository, al primo
+      # articolo sovrascriverebbe il file online cancellando quelle pagine
+      # (successo davvero: il 24/09 erano state aggiunte 4 URL che la copia nel
+      # repo non aveva). Quindi si parte SEMPRE dalla sitemap online. Se non e'
+      # scaricabile o non sembra valida ci si ferma: meglio saltare un articolo
+      # che rovinare la sitemap.
+      - name: Scarica la sitemap attuale dal sito
+        if: steps.gate.outputs.should_run == 'true' && steps.gate.outputs.genera == 'true'
+        run: |
+          curl -sSf --max-time 30 "$SITO/sitemap.xml" -o /tmp/sitemap_online.xml
+          URL_ONLINE=$(grep -c '<loc>' /tmp/sitemap_online.xml || true)
+          URL_REPO=$(grep -c '<loc>' site/sitemap.xml || true)
+          echo "URL nella sitemap online: $URL_ONLINE — nella copia del repository: $URL_REPO"
+          if ! grep -q '</urlset>' /tmp/sitemap_online.xml || [ "$URL_ONLINE" -lt 20 ]; then
+            echo "::error::La sitemap online non sembra valida, mi fermo per non sovrascriverla."
+            exit 1
+          fi
+          cp /tmp/sitemap_online.xml site/sitemap.xml
+
       - name: Genera articolo e aggiorna il sito
         id: generate
-        if: steps.gate.outputs.should_run == 'true'
+        if: steps.gate.outputs.should_run == 'true' && steps.gate.outputs.genera == 'true'
         working-directory: pipeline
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
@@ -57,7 +97,7 @@ jobs:
         run: python generate_article.py
 
       - name: Commit modifiche nel repository
-        if: steps.gate.outputs.should_run == 'true'
+        if: steps.gate.outputs.should_run == 'true' && steps.gate.outputs.genera == 'true'
         run: |
           git config user.name "fabiofidone-blog-bot"
           git config user.email "actions@users.noreply.github.com"
@@ -65,8 +105,60 @@ jobs:
           git diff --staged --quiet || git commit -m "Nuovo articolo blog automatico [skip ci]"
           git push
 
-      - name: Pubblica su Aruba via FTP (blog/ + sitemap.xml)
+      # Il sito e' su Hetzner. Si caricano solo blog/ e sitemap.xml, mai
+      # --delete (e comunque il server lo rifiuta): un file tolto dal repo
+      # non sparisce dal sito, va rimosso a mano. sitemap.xml con --inplace
+      # perche' blogdeploy puo' scrivere il file ma non la cartella radice.
+      - name: Pubblica su Hetzner (blog/ + sitemap.xml)
         if: steps.gate.outputs.should_run == 'true'
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "${{ secrets.HETZNER_SSH_KEY }}" > ~/.ssh/hetzner_blog
+          chmod 600 ~/.ssh/hetzner_blog
+          printf '%s\n' "${{ secrets.HETZNER_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          SSH="ssh -i $HOME/.ssh/hetzner_blog -o StrictHostKeyChecking=yes -o BatchMode=yes -o ConnectTimeout=30"
+          rsync -rlt --itemize-changes --chmod=D755,F644 -e "$SSH" site/blog/ "$HETZNER_USER@$HETZNER_HOST:blog/"
+          rsync -t --inplace --itemize-changes --chmod=F644 -e "$SSH" site/sitemap.xml "$HETZNER_USER@$HETZNER_HOST:sitemap.xml"
+          rm -f ~/.ssh/hetzner_blog
+
+      # Controllo reale: la pagina deve rispondere 200 dal server Hetzner
+      # (--resolve la forza su Hetzner anche se il DNS punta ancora altrove).
+      - name: Verifica che le pagine rispondano su Hetzner
+        if: steps.gate.outputs.should_run == 'true'
+        run: |
+          controlla() {
+            CODICE=$(curl -sk -o /dev/null -w '%{http_code}' --max-time 30 \
+              --resolve "www.fabiofidone.it:443:$HETZNER_HOST" "$SITO$1")
+            echo "$1 -> $CODICE"
+            [ "$CODICE" = "200" ]
+          }
+          controlla /blog/
+          controlla /sitemap.xml
+          if [ -n "${{ steps.generate.outputs.slug }}" ]; then
+            controlla "/blog/${{ steps.generate.outputs.slug }}/"
+          fi
+
+      # Periodo di passaggio: finche' il DNS di www.fabiofidone.it punta ancora
+      # ad Aruba, l'articolo va caricato ANCHE li', altrimenti i visitatori non
+      # lo vedono. Appena il DNS punta a Hetzner questo step si salta da solo:
+      # non serve toccare il workflow il giorno del cambio DNS. Dopo il cambio,
+      # i secret FTP_* e questo step si possono eliminare.
+      - name: Dove punta il dominio
+        id: dns
+        if: steps.gate.outputs.should_run == 'true'
+        run: |
+          IP=$(getent ahostsv4 www.fabiofidone.it | awk 'NR==1{print $1}')
+          echo "www.fabiofidone.it -> $IP"
+          if [ "$IP" = "$HETZNER_HOST" ]; then
+            echo "aruba=false" >> "$GITHUB_OUTPUT"
+            echo "Il dominio punta gia' a Hetzner: niente upload su Aruba."
+          else
+            echo "aruba=true" >> "$GITHUB_OUTPUT"
+            echo "Il dominio punta ancora ad Aruba: carico anche li'."
+          fi
+
+      - name: Pubblica anche su Aruba via FTP (solo finche' il DNS punta ad Aruba)
+        if: steps.gate.outputs.should_run == 'true' && steps.dns.outputs.aruba == 'true'
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
@@ -93,10 +185,10 @@ jobs:
               "urlList": ["https://www.fabiofidone.it/blog/${{ steps.generate.outputs.slug }}/", "https://www.fabiofidone.it/blog/"]
             }'
 
-      # Notifica finale — parte SOLO se generazione + commit + upload FTP sono
+      # Notifica finale — parte SOLO se generazione + commit + upload sono
       # andati tutti a buon fine. Deliberatamente fuori dallo script Python:
       # quello scrive solo file in locale nel runner, non sa se poi git push
-      # o l'upload FTP falliscono dopo di lui.
+      # o l'upload falliscono dopo di lui.
       - name: Notifica successo su WhatsApp
         if: success() && steps.generate.outputs.slug != ''
         run: |
@@ -110,7 +202,7 @@ jobs:
       # true e' voluto: se il token LinkedIn e' scaduto (dura ~60gg, limite
       # di LinkedIn) questo step fallisce ma non deve marcare l'intero job
       # come fallito, altrimenti scatterebbe anche la notifica di fallimento
-      # "commit o upload FTP" qui sotto, che sarebbe fuorviante — il blog e'
+      # "commit o upload" qui sotto, che sarebbe fuorviante — il blog e'
       # stato pubblicato correttamente, e' solo LinkedIn che non ha funzionato.
       - name: Genera e pubblica post LinkedIn
         id: linkedin
@@ -134,10 +226,10 @@ jobs:
             --data-urlencode "text=Blog fabiofidone.it: articolo pubblicato ma post LinkedIn FALLITO (probabile token scaduto, dura ~60gg) — controlla i log su GitHub Actions e rigenera LINKEDIN_TOKEN" \
             --data-urlencode "apikey=${{ secrets.WHATSAPP_APIKEY }}"
 
-      - name: Notifica fallimento su WhatsApp (commit o upload FTP)
+      - name: Notifica fallimento su WhatsApp
         if: failure()
         run: |
           curl -s -G "https://api.callmebot.com/whatsapp.php" \
             --data-urlencode "phone=${{ secrets.WHATSAPP_PHONE }}" \
-            --data-urlencode "text=Blog fabiofidone.it: il run e' fallito nel commit o nell'upload FTP (non nella generazione) — controlla i log su GitHub Actions" \
+            --data-urlencode "text=Blog fabiofidone.it: il run e' fallito (sitemap, commit, upload su Hetzner o su Aruba) — controlla i log su GitHub Actions" \
             --data-urlencode "apikey=${{ secrets.WHATSAPP_APIKEY }}"

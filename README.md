@@ -4,7 +4,9 @@ Pipeline automatica di generazione e pubblicazione articoli per il blog di [fabi
 
 - **Generazione**: Claude Haiku 4.5 (il piu' economico), guidato da `pipeline/style_guide.md`
 - **Cadenza**: lunedi' e giovedi', via GitHub Actions (`.github/workflows/publish-blog.yml`)
-- **Pubblicazione**: upload diretto via FTP su Aruba — nessuna revisione umana nel mezzo, per scelta esplicita
+- **Pubblicazione**: rsync via SSH sul server Hetzner (utente `blogdeploy`, può solo scrivere in `/var/www/fabiofidone.it`, niente shell né cancellazioni) — nessuna revisione umana nel mezzo, per scelta esplicita. Finché il DNS di www.fabiofidone.it punta ancora ad Aruba, il workflow carica anche lì via FTP; dopo il cambio DNS quello step si salta da solo
+- **Sitemap**: prima di ogni articolo viene scaricata quella online, così le pagine aggiunte a mano sul sito non vengono cancellate
+- **Run manuale "solo_deploy"**: ricarica il contenuto di `site/` senza generare articoli né pubblicare su LinkedIn (test o riallineamento)
 - **LinkedIn**: dopo ogni articolo pubblicato con successo, genera (Claude Haiku 4.5, guidato da `pipeline/linkedin_style_guide.md`) e pubblica un post di annuncio sul profilo personale — stesso principio "zero revisione umana", ma isolato: se fallisce (es. token scaduto) non blocca ne' marca come fallita la pubblicazione del blog
 - **Notifica**: WhatsApp (CallMeBot) ad ogni articolo pubblicato, ad ogni fallimento (blog o LinkedIn separatamente)
 
@@ -15,7 +17,9 @@ Pipeline automatica di generazione e pubblicazione articoli per il blog di [fabi
 | `ANTHROPIC_API_KEY` | Chiave API Claude, dedicata a questo progetto |
 | `WHATSAPP_PHONE` | Numero WhatsApp per le notifiche |
 | `WHATSAPP_APIKEY` | Apikey CallMeBot |
-| `FTP_SERVER` | Host FTP Aruba (es. `ftp.fabiofidone.it`) |
+| `HETZNER_SSH_KEY` | Chiave privata ed25519 dell'utente `blogdeploy` su Hetzner |
+| `HETZNER_KNOWN_HOSTS` | Impronta SSH del server Hetzner (verificata) |
+| `FTP_SERVER` | Host FTP Aruba (es. `ftp.fabiofidone.it`) — da eliminare dopo il cambio DNS |
 | `FTP_USERNAME` | Utente FTP Aruba |
 | `FTP_PASSWORD` | Password FTP Aruba |
 | `LINKEDIN_TOKEN` | Access token OAuth LinkedIn (scope `w_member_social`), scade ogni ~60 giorni — va rigenerato manualmente (vedi sotto) |
@@ -32,7 +36,7 @@ Non e' automatizzabile: LinkedIn richiede un'autorizzazione interattiva nel brow
 ## Struttura
 
 - `pipeline/` — script di generazione (`generate_article.py`), post LinkedIn (`generate_linkedin_post.py`), aggiornamento indice/nav (`index_updater.py`), guide di stile (blog + LinkedIn), template HTML, elenco argomenti (`topics_covered.json`)
-- `site/blog/` — copia live della cartella `blog/` del sito, sincronizzata su Aruba via FTP ad ogni run
+- `site/blog/` — copia live della cartella `blog/` del sito, sincronizzata su Hetzner ad ogni run
 
 ## Test manuale
 

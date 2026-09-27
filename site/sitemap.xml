@@ -45,7 +45,7 @@
   <url><loc>https://www.fabiofidone.it/portfolio/aapl-anomaly/</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
 
   <!-- Corsi e prodotti -->
-  <url><loc>https://www.fabiofidone.it/corso-chatgpt/</loc><priority>0.9</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://www.fabiofidone.it/corso-chatgpt/</loc><lastmod>2026-09-24</lastmod><priority>0.9</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://www.fabiofidone.it/corso-claude/</loc><priority>0.9</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://www.fabiofidone.it/ebook/</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
 
@@ -54,8 +54,8 @@
   <url><loc>https://www.fabiofidone.it/ainews/</loc><priority>0.8</priority><changefreq>daily</changefreq></url>
 
   <!-- Guide guadagnare con AI -->
-  <url><loc>https://www.fabiofidone.it/guadagnare-con-ia/</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-  <url><loc>https://www.fabiofidone.it/ebook-ia/</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://www.fabiofidone.it/guadagnare-con-ia/</loc><lastmod>2026-09-24</lastmod><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://www.fabiofidone.it/ebook-ia/</loc><lastmod>2026-09-24</lastmod><priority>0.7</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://www.fabiofidone.it/corsi-online/</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://www.fabiofidone.it/social-automation/</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://www.fabiofidone.it/chatbot-ia/</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
@@ -67,7 +67,7 @@
   <url><loc>https://www.fabiofidone.it/seo-ia/</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://www.fabiofidone.it/funnel-marketing/</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://www.fabiofidone.it/newsletter-ia/</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
-  <url><loc>https://www.fabiofidone.it/app-ia/</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://www.fabiofidone.it/app-ia/</loc><lastmod>2026-09-24</lastmod><priority>0.7</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://www.fabiofidone.it/siti-web-ia/</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://www.fabiofidone.it/template-ia/</loc><priority>0.6</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://www.fabiofidone.it/foto-stock/</loc><priority>0.6</priority><changefreq>monthly</changefreq></url>
@@ -75,7 +75,10 @@
   <url><loc>https://www.fabiofidone.it/podcast-ia/</loc><priority>0.6</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://www.fabiofidone.it/videogiochi-ia/</loc><priority>0.6</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://www.fabiofidone.it/guide-online/</loc><priority>0.6</priority><changefreq>monthly</changefreq></url>
-
+ <url><loc>https://www.fabiofidone.it/corso-chatgpt/</loc><priority>0.6</priority><changefreq>monthly</changefreq></url>
+ <url><loc>https://www.fabiofidone.it/guadagnare-con-ia/</loc><priority>0.6</priority><changefreq>monthly</changefreq></url>
+ <url><loc>https://www.fabiofidone.it/app-ia/</loc><priority>0.6</priority><changefreq>monthly</changefreq></url>
+ <url><loc>https://www.fabiofidone.it/ebook-ia/</loc><priority>0.6</priority><changefreq>monthly</changefreq></url>
   <!-- Altro -->
   <url><loc>https://www.fabiofidone.it/avatar-spot/</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://www.fabiofidone.it/mailing-list/</loc><priority>0.6</priority><changefreq>monthly</changefreq></url>
