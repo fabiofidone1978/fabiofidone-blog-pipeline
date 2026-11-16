@@ -216,6 +216,66 @@
       "slug": "sicurezza-iot-domotica-ai",
       "titolo": "Sicurezza IoT in un impianto domotico con AI: i rischi che si sottovalutano",
       "categoria": "[ IoT · sicurezza · domotica ]"
+    },
+    {
+      "slug": "costruire-knowledge-base-aziendale-rag",
+      "titolo": "Come costruire una knowledge base aziendale interrogabile con AI (senza far trapelare dati)",
+      "categoria": "[ RAG · knowledge base ]"
+    },
+    {
+      "slug": "valutare-qualita-risposte-llm",
+      "titolo": "Come valutare la qualità delle risposte di un LLM prima di metterlo in produzione",
+      "categoria": "[ LLM · valutazione · qualità ]"
+    },
+    {
+      "slug": "costi-api-llm-come-tenerli-sotto-controllo",
+      "titolo": "Costi delle API LLM: come tenerli sotto controllo quando i volumi crescono",
+      "categoria": "[ LLM · costi · ottimizzazione ]"
+    },
+    {
+      "slug": "whatsapp-business-api-automazione-pmi",
+      "titolo": "WhatsApp Business API per una PMI: cosa si può automatizzare e cosa no",
+      "categoria": "[ WhatsApp · automazione · PMI ]"
+    },
+    {
+      "slug": "human-in-the-loop-automazioni-ai",
+      "titolo": "Human-in-the-loop: quando un'automazione AI deve chiedere conferma a una persona",
+      "categoria": "[ automazione · controllo umano ]"
+    },
+    {
+      "slug": "allucinazioni-llm-come-ridurle",
+      "titolo": "Allucinazioni degli LLM: come ridurle nei processi aziendali (e come accorgersene)",
+      "categoria": "[ LLM · affidabilità ]"
+    },
+    {
+      "slug": "automazione-report-dati-ai",
+      "titolo": "Report automatici da dati aziendali con AI: dal foglio di calcolo al documento pronto",
+      "categoria": "[ report · dati · automazione ]"
+    },
+    {
+      "slug": "scraping-legale-dati-pubblici-gdpr",
+      "titolo": "Raccolta automatica di dati dal web: cosa è lecito e cosa no (GDPR e termini d'uso)",
+      "categoria": "[ scraping · GDPR · compliance ]"
+    },
+    {
+      "slug": "passare-da-prototipo-a-produzione-ai",
+      "titolo": "Dal prototipo alla produzione: perché molti progetti AI si fermano al demo",
+      "categoria": "[ AI · produzione · progetti ]"
+    },
+    {
+      "slug": "scegliere-fornitore-sviluppo-ai-pmi",
+      "titolo": "Come scegliere chi sviluppa un progetto AI per la tua PMI: domande da fare prima di firmare",
+      "categoria": "[ AI · PMI · fornitori ]"
+    },
+    {
+      "slug": "assistente-vocale-aziendale-ai",
+      "titolo": "Assistenti vocali e trascrizione automatica con AI: usi reali in azienda e limiti",
+      "categoria": "[ voce · trascrizione · AI ]"
+    },
+    {
+      "slug": "gestione-errori-retry-automazioni",
+      "titolo": "Gestione degli errori nelle automazioni: retry, code e allarmi che evitano le notti in bianco",
+      "categoria": "[ affidabilità · automazione ]"
     }
   ]
 }
